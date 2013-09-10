@@ -41,13 +41,15 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 	
 - Now you can compile YAG's code with redis' driver - redix. 
 
-	cd $GOPATH
+		cd $GOPATH
 
-	go get github.com/fzzy/radix/redis
+		go get github.com/fzzy/radix/redis
 
-	go get github.com/kuba--/yag/listener
-	go get github.com/kuba--/yag/webserver
-	go get github.com/kuba--/yag/ttl
+		go get github.com/kuba--/yag/listener
+	
+		go get github.com/kuba--/yag/webserver
+	
+		go get github.com/kuba--/yag/ttl
 	
 
 - Executable files are in $GOPATH/bin directory.
@@ -56,9 +58,11 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 -  Start listener, webserver, ttl
 
-	$GOPATH/bin/listener [-f file hierarchy for config and script files]
-	$GOPATH/bin/webserver [-f file hierarchy for config and script files]
-	$GOPATH/bin/ttl [-f file hierarchy for config and script files]
+		$GOPATH/bin/listener [-f file hierarchy for config and script files]
+	
+		$GOPATH/bin/webserver [-f file hierarchy for config and script files]
+	
+		$GOPATH/bin/ttl [-f file hierarchy for config and script files]
 
 
 
@@ -66,26 +70,26 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 - Configuration files (json format), e.g.:
 
-	{
-  		"DB":{				 // Database section
-    			"Addr":"localhost:6379", // address and port (in seconds)
-    			"Timeout":30,		 // timeout per connection (in seconds)
-    			"MaxClients":30	         // maximum number of clients in DB connection pool
-  		},
-  		"Metrics":{			// Metrics section
-    			"TTL":86600		// time to live per metric (in seconds)
-  		},
-  		"Listener":{			// Listener server section 
-    			"Addr":":2003"		// local address and port
-  		},
-  		"Webserver":{			// Webserver section
-    			"Addr":":8080",		// local address and port
-    			"Timeout":30		// timeout per connection (in seconds)
-  		},
-  		"TTL":{				// TTL daemon section
-    			"Tick":12		// timers tick (in seconds)
-  		}
-	}
+		{
+	  		"DB":{                           // Database section
+	    			"Addr":"localhost:6379", // address and port (in seconds)
+	    			"Timeout":30,            // timeout per connection (in seconds)
+	    			"MaxClients":30          // maximum number of clients in DB connection pool
+	  		},
+	  		"Metrics":{                      // Metrics section
+	    			"TTL":86600              // time to live per metric (in seconds)
+	  		},
+	  		"Listener":{                     // Listener server section 
+	    			"Addr":":2003"           // local address and port
+	  		},
+	  		"Webserver":{                    // Webserver section
+	    			"Addr":":8080",          // local address and port
+	    			"Timeout":30             // timeout per connection (in seconds)
+	  		},
+	  		"TTL":{                          // TTL daemon section
+	    			"Tick":12                // timers tick (in seconds)
+	  		}
+		}
  
 
 ## TODO
