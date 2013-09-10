@@ -54,7 +54,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 # Running
 
--  Start listener, webserver, ttl (config file:  *$GOPATH/src/github.com/kuba--/yag/config.json* db script files: *add.lua* *get.lua* *ttl.lua*)
+-  Start listener, webserver, ttl
 
 	$GOPATH/bin/listener [-f file hierarchy for config and script files]
 	$GOPATH/bin/webserver [-f file hierarchy for config and script files]
