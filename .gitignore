@@ -1,0 +1,11 @@
+*.sublime-project
+
+*.sublime-workspace
+
+*.DS_Store
+
+*.bz2
+
+*.gz
+
+*.swp

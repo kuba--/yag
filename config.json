@@ -1,0 +1,20 @@
+{
+  "DB":{
+    "Addr":"localhost:6379",
+    "Timeout":30,
+    "MaxClients":30
+  },
+  "Metrics":{
+    "TTL":86600
+  },
+  "Listener":{
+    "Addr":":2003"
+  },
+  "Webserver":{
+    "Addr":":8080",
+    "Timeout":30
+  },
+  "TTL":{
+    "Tick":12
+  }
+}
