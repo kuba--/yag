@@ -58,11 +58,11 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 -  Start listener, webserver, ttl
 
-		$GOPATH/bin/listener [-f file hierarchy for config and script files]
+		$GOPATH/bin/listener [-f Specify a path to the config file]
 	
-		$GOPATH/bin/webserver [-f file hierarchy for config and script files]
+		$GOPATH/bin/webserver [-f Specify a path to the config file]
 	
-		$GOPATH/bin/ttl [-f file hierarchy for config and script files]
+		$GOPATH/bin/ttl [-f Specify a path to the config file]
 
 
 
@@ -77,6 +77,9 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 	    			"MaxClients":30          // maximum number of clients in DB connection pool
 	  		},
 	  		"Metrics":{                      // Metrics section
+	  				"GetScript":"get.lua",   // relative path to get script
+					"AddScript":"add.lua",   // relative path to add script					
+					"TtlScript":"ttl.lua",   // relative path to ttl script
 	    			"TTL":86600              // time to live per metric (in seconds)
 	  		},
 	  		"Listener":{                     // Listener server section 

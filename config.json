@@ -4,7 +4,10 @@
     "Timeout":30,
     "MaxClients":30
   },
-  "Metrics":{
+  "Metrics":{    
+    "GetScript":"get.lua",
+    "AddScript":"add.lua",    
+    "TtlScript":"ttl.lua",
     "TTL":86600
   },
   "Listener":{

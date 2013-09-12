@@ -13,26 +13,32 @@ var addSha, getSha, ttlSha string
 
 func init() {
 	if client, err := db.Client(); err != nil {
-		log.Panic(err)
+		log.Println(err)
 	} else {
 		defer db.Release(client)
 		{
-			if addSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.AddScript).Str(); err != nil {
-				log.Panic(err)
-			} else {
-				log.Println("ADD SHA", addSha)
+			if len(config.Cfg.Metrics.AddScript) > 0 {
+				if addSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.AddScript).Str(); err != nil {
+					log.Println(err)
+				} else {
+					log.Println("ADD SHA", addSha)
+				}
 			}
 
-			if getSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.GetScript).Str(); err != nil {
-				log.Panic(err)
-			} else {
-				log.Println("GET SHA", getSha)
+			if len(config.Cfg.Metrics.GetScript) > 0 {
+				if getSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.GetScript).Str(); err != nil {
+					log.Println(err)
+				} else {
+					log.Println("GET SHA", getSha)
+				}
 			}
 
-			if ttlSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.TtlScript).Str(); err != nil {
-				log.Panic(err)
-			} else {
-				log.Println("TTL SHA", ttlSha)
+			if len(config.Cfg.Metrics.TtlScript) > 0 {
+				if ttlSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.TtlScript).Str(); err != nil {
+					log.Println(err)
+				} else {
+					log.Println("TTL SHA", ttlSha)
+				}
 			}
 		}
 	}

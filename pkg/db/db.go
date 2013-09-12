@@ -22,8 +22,6 @@ func newClient() (*redis.Client, error) {
 // Client tries to get first available client from pool,
 // otherwise creates new instance of client
 func Client() (*redis.Client, error) {
-	log.Println("Number of Db Clients: ", len(clients))
-
 	for i := 0; i < len(clients); i++ {
 		select {
 		case c := <-clients:
@@ -51,6 +49,7 @@ func Release(client *redis.Client) {
 		if len(clients) < config.Cfg.DB.MaxClients {
 			log.Println("Releasing Db Client")
 			clients <- client
+			log.Println("Number of idle Db Clients: ", len(clients))
 		} else {
 			log.Println("Closing Db Client")
 			if err := client.Close(); err != nil {
