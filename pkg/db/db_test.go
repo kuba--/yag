@@ -1,3 +1,7 @@
+/**
+ * go test -f ../../config.json 
+ */
+
 package db
 
 import (
