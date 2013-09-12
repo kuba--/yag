@@ -50,6 +50,20 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 		go get github.com/kuba--/yag/webserver
 	
 		go get github.com/kuba--/yag/ttl
+		
+
+- If you already downloaded/cloned a code, you would be able to use make command-line tool.
+		
+		# just compile
+		make
+
+		# check deploy target if you want to compile and deploy
+		make deploy
+		
+		# if you installed golang with cross-compile flag, you would be able to compile yag for any platform (e.g. linux)
+		make -e GOOS=linux GOARCH=amd64 
+		
+		
 	
 
 - Executable files are in $GOPATH/bin directory.
@@ -96,7 +110,8 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
  
 
 ## TODO
-
+* Consolidate datapoints to improve rendering performance (support for maxDataPoints).
+* Add more functions
 * Uncaught stacked series cannot have differing numbers of points: 10 vs 251; see Rickshaw.Series.fill() 
 [http://beecy.net/post/2009/04/15/fixing-data-series-for-chart-cannot-have-different-number-of-data-points.aspx]
 
