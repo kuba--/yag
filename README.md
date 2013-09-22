@@ -33,7 +33,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 	
 - YAG was implemented in "Go", so install golang first [http://golang.org/doc/install].
 
-- YAG uses redis database to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. 
+- YAG uses redis database (check redis.conf for configuration details) to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. 
 
 # Compiling
 	
