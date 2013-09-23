@@ -83,31 +83,34 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 ## Configuring
 
 - Configuration files (json format), e.g.:
-
-		{
-	  		"DB":{                           // Database section
-	    			"Addr":"localhost:6379", // address and port (in seconds)
-	    			"Timeout":30,            // timeout per connection (in seconds)
-	    			"MaxClients":30          // maximum number of clients in DB connection pool
-	  		},
-	  		"Metrics":{                      // Metrics section
-	  				"GetScript":"get.lua",   // relative path to get script
-					"AddScript":"add.lua",   // relative path to add script					
-					"TtlScript":"ttl.lua",   // relative path to ttl script
-	    			"TTL":86600              // time to live per metric (in seconds)
-	  		},
-	  		"Listener":{                     // Listener server section 
-	    			"Addr":":2003"           // local address and port
-	  		},
-	  		"Webserver":{                    // Webserver section
-	    			"Addr":":8080",          // local address and port
-	    			"Timeout":30             // timeout per connection (in seconds)
-	  		},
-	  		"TTL":{                          // TTL daemon section
-	    			"Tick":12                // timers tick (in seconds)
-	  		}
+<code>
+<pre>
+	{
+		"DB":{                           // Database section
+			"Addr":"localhost:6379", // address and port of Redis DB
+			"Timeout":30,            // timeout per connection (in seconds)
+			"MaxClients":30          // maximum number of clients in DB connection pool
+		},
+		"Metrics":{                      // Metrics section
+			"GetScript":"get.lua",   // relative path to get script
+			"AddScript":"add.lua",   // relative path to add script					
+			"TtlScript":"ttl.lua",   // relative path to ttl script
+			"TTL":86600              // time to live per metric (in seconds)
+		},
+		"Listener":{                     // Listener server section 
+			"Addr":":2003"           // local address and port
+		},
+		"Webserver":{                    // Webserver section
+			"Addr":":8080",          // local address and port
+			"Timeout":30             // timeout per connection (in seconds)
+		},
+		"TTL":{                          // TTL daemon section
+			"Tick":12                // timers tick (in seconds)
 		}
- 
+	}
+</pre>
+</code>
+
 
 ## TODO
 * Consolidate datapoints to improve rendering performance (support for maxDataPoints).
