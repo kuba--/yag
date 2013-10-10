@@ -53,7 +53,7 @@ func init() {
 type Metrics struct {
 	Key        string
 	Target     string
-	Datapoints [][]float64
+	Datapoints [][2]float64
 }
 
 func (m1 *Metrics) isEqual(m2 *Metrics) bool {
@@ -87,12 +87,12 @@ func newMetrics(key string, m []map[string]interface{}) []*Metrics {
 		if target, ok := mi["target"].(string); ok {
 			mm.Target = target
 		}
-		mm.Datapoints = make([][]float64, 0)
+		mm.Datapoints = make([][2]float64, 0)
 		if datapoints, ok := mi["datapoints"].([]interface{}); ok {
 			for _, dp := range datapoints {
 				dpi := dp.(string)
 
-				var pt []float64
+				var pt [2]float64
 				err := json.Unmarshal([]byte(dpi), &pt)
 				if err != nil {
 					log.Println(err)
