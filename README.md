@@ -33,7 +33,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 	
 - YAG was implemented in "Go", so install golang first [http://golang.org/doc/install].
 
-- YAG uses redis database (check redis.conf for configuration details) to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. 
+- YAG uses redis database (check redis.conf for configuration details) to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. Redis version >= `2.6.0` required in order to load lua scripts
 
 # Compiling
 	
@@ -82,9 +82,10 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 ## Configuring
 
-- Configuration files (json format), e.g.:
-<code>
-<pre>
+- Configuration file (e.g. config.json):
+
+**Note:** remove comments before using this config
+
 	{
 		"DB":{                           // Database section
 			"Addr":"localhost:6379", // address and port of Redis DB
@@ -108,9 +109,6 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 			"Tick":12                // timers tick (in seconds)
 		}
 	}
-</pre>
-</code>
-
 
 ## TODO
 * Consolidate datapoints to improve rendering performance (support for maxDataPoints).

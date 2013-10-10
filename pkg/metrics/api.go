@@ -66,7 +66,7 @@ func (api *Api) sum(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][]float64, 0)
+				datapoints := make([][2]float64, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
@@ -78,28 +78,28 @@ func (api *Api) sum(m []*Metrics) []*Metrics {
 
 					switch {
 					case its0 == its1:
-						datapoints = append(datapoints, []float64{v0 + v1, ts0})
+						datapoints = append(datapoints, [2]float64{v0 + v1, ts0})
 						i0++
 						i1++
 						continue
 
 					case its0 < its1:
-						datapoints = append(datapoints, []float64{v0, ts0})
+						datapoints = append(datapoints, [2]float64{v0, ts0})
 						i0++
 						continue
 
 					case its0 > its1:
-						datapoints = append(datapoints, []float64{v1, ts1})
+						datapoints = append(datapoints, [2]float64{v1, ts1})
 						i1++
 					}
 				}
 
 				for ; i0 < n0; i0++ {
-					datapoints = append(datapoints, []float64{dp0[i0][0], dp0[i0][1]})
+					datapoints = append(datapoints, [2]float64{dp0[i0][0], dp0[i0][1]})
 				}
 
 				for ; i1 < n1; i1++ {
-					datapoints = append(datapoints, []float64{dp1[i1][0], dp1[i1][1]})
+					datapoints = append(datapoints, [2]float64{dp1[i1][0], dp1[i1][1]})
 				}
 
 				dp0 = datapoints
@@ -124,7 +124,7 @@ func (api *Api) div(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][]float64, 0)
+				datapoints := make([][2]float64, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
@@ -136,7 +136,7 @@ func (api *Api) div(m []*Metrics) []*Metrics {
 
 					switch {
 					case its0 == its1:
-						datapoints = append(datapoints, []float64{v0 / v1, ts0})
+						datapoints = append(datapoints, [2]float64{v0 / v1, ts0})
 						i0++
 						i1++
 						continue
@@ -172,7 +172,7 @@ func (api *Api) diff(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][]float64, 0)
+				datapoints := make([][2]float64, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
@@ -184,28 +184,28 @@ func (api *Api) diff(m []*Metrics) []*Metrics {
 
 					switch {
 					case its0 == its1:
-						datapoints = append(datapoints, []float64{v0 - v1, ts0})
+						datapoints = append(datapoints, [2]float64{v0 - v1, ts0})
 						i0++
 						i1++
 						continue
 
 					case its0 < its1:
-						datapoints = append(datapoints, []float64{v0, ts0})
+						datapoints = append(datapoints, [2]float64{v0, ts0})
 						i0++
 						continue
 
 					case its0 > its1:
-						datapoints = append(datapoints, []float64{v1, ts1})
+						datapoints = append(datapoints, [2]float64{v1, ts1})
 						i1++
 					}
 				}
 
 				for ; i0 < n0; i0++ {
-					datapoints = append(datapoints, []float64{dp0[i0][0], dp0[i0][1]})
+					datapoints = append(datapoints, [2]float64{dp0[i0][0], dp0[i0][1]})
 				}
 
 				for ; i1 < n1; i1++ {
-					datapoints = append(datapoints, []float64{dp1[i1][0], dp1[i1][1]})
+					datapoints = append(datapoints, [2]float64{dp1[i1][0], dp1[i1][1]})
 				}
 
 				dp0 = datapoints
