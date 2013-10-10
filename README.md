@@ -33,7 +33,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 	
 - YAG was implemented in "Go", so install golang first [http://golang.org/doc/install].
 
-- YAG uses redis database to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. 
+- YAG uses redis database (check redis.conf for configuration details) to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. Redis version >= `2.6.0` required in order to load lua scripts
 
 # Compiling
 	
@@ -50,6 +50,20 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 		go get github.com/kuba--/yag/webserver
 	
 		go get github.com/kuba--/yag/ttl
+		
+
+- If you already downloaded/cloned a code, you would be able to use make command-line tool.
+		
+		# just compile
+		make
+
+		# check deploy target if you want to compile and deploy
+		make deploy
+		
+		# if you installed golang with cross-compile flag, you would be able to compile yag for any platform (e.g. linux)
+		make -e GOOS=linux GOARCH=amd64 
+		
+		
 	
 
 - Executable files are in $GOPATH/bin directory.
@@ -68,35 +82,37 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 ## Configuring
 
-- Configuration files (json format), e.g.:
+- Configuration file (e.g. config.json):
 
-		{
-	  		"DB":{                           // Database section
-	    			"Addr":"localhost:6379", // address and port (in seconds)
-	    			"Timeout":30,            // timeout per connection (in seconds)
-	    			"MaxClients":30          // maximum number of clients in DB connection pool
-	  		},
-	  		"Metrics":{                      // Metrics section
-	  				"GetScript":"get.lua",   // relative path to get script
-					"AddScript":"add.lua",   // relative path to add script					
-					"TtlScript":"ttl.lua",   // relative path to ttl script
-	    			"TTL":86600              // time to live per metric (in seconds)
-	  		},
-	  		"Listener":{                     // Listener server section 
-	    			"Addr":":2003"           // local address and port
-	  		},
-	  		"Webserver":{                    // Webserver section
-	    			"Addr":":8080",          // local address and port
-	    			"Timeout":30             // timeout per connection (in seconds)
-	  		},
-	  		"TTL":{                          // TTL daemon section
-	    			"Tick":12                // timers tick (in seconds)
-	  		}
+**Note:** remove comments before using this config
+
+	{
+		"DB":{                           // Database section
+			"Addr":"localhost:6379", // address and port of Redis DB
+			"Timeout":30,            // timeout per connection (in seconds)
+			"MaxClients":30          // maximum number of clients in DB connection pool
+		},
+		"Metrics":{                      // Metrics section
+			"GetScript":"get.lua",   // relative path to get script
+			"AddScript":"add.lua",   // relative path to add script					
+			"TtlScript":"ttl.lua",   // relative path to ttl script
+			"TTL":86600              // time to live per metric (in seconds)
+		},
+		"Listener":{                     // Listener server section 
+			"Addr":":2003"           // local address and port
+		},
+		"Webserver":{                    // Webserver section
+			"Addr":":8080",          // local address and port
+			"Timeout":30             // timeout per connection (in seconds)
+		},
+		"TTL":{                          // TTL daemon section
+			"Tick":12                // timers tick (in seconds)
 		}
- 
+	}
 
 ## TODO
-
+* Consolidate datapoints to improve rendering performance (support for maxDataPoints).
+* Add more functions
 * Uncaught stacked series cannot have differing numbers of points: 10 vs 251; see Rickshaw.Series.fill() 
 [http://beecy.net/post/2009/04/15/fixing-data-series-for-chart-cannot-have-different-number-of-data-points.aspx]
 

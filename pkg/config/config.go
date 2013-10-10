@@ -45,7 +45,9 @@ func init() {
 	if cfg, err := ioutil.ReadFile(f); err != nil {
 		log.Println(err)
 	} else {
-		json.Unmarshal(cfg, &Cfg)
+		if err := json.Unmarshal(cfg, &Cfg); err != nil {
+			log.Fatal(err)
+		}
 		log.Printf("%v", string(cfg))
 	}
 
