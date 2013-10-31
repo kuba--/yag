@@ -1,4 +1,4 @@
-local get = function (keys, min, max, n)
+local get = function (keys, min, max)
         local data = {}
         for i = 1, table.getn(keys), 1 do
                 local h = {}
@@ -8,4 +8,4 @@ local get = function (keys, min, max, n)
         end
         return cjson.encode(data)
 end
-return get(redis.call("KEYS", KEYS[1]), ARGV[1], ARGV[2], tonumber(ARGV[3]))
+return get(redis.call("KEYS", KEYS[1]), ARGV[1], ARGV[2])

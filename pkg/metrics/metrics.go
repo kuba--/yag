@@ -3,6 +3,7 @@ package metrics
 import (
 	"encoding/json"
 	"log"
+	"math"
 	"time"
 
 	"github.com/kuba--/yag/pkg/config"
@@ -44,65 +45,79 @@ func init() {
 	}
 }
 
-/*
- * [
- *  {"target": "status.200", "datapoints": [[1720.0, 1370846820], ...], },
- *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
- * ]
- */
 type Metrics struct {
 	Key        string
 	Target     string
 	Datapoints [][2]float64
 }
 
-func (m1 *Metrics) isEqual(m2 *Metrics) bool {
-	if m2 == nil {
-		return false
-	}
-
-	d1, d2 := m1.Datapoints, m2.Datapoints
-	ld1, ld2 := len(d1), len(d2)
-	if ld1 != ld2 {
-		return false
-	}
-
-	for i := 0; i < ld1; i++ {
-		v1, t1 := d1[i][0], d1[i][1]
-		v2, t2 := d2[i][0], d2[i][1]
-		if t1 != t2 || v1 != v2 {
-			return false
-		}
-	}
-
-	return true
+func newMetrics(key, target string, datapoints [][2]float64) (m *Metrics) {
+	m = new(Metrics)
+	m.Key, m.Target, m.Datapoints = key, target, datapoints
+	return
 }
 
-func newMetrics(key string, m []map[string]interface{}) []*Metrics {
-	ms := make([]*Metrics, 0)
+/*
+ * Get queries for metrics which matches to the key pattern (e.g.: status.*)
+ *
+ * [
+ *  {"target": "status.200", "datapoints": [[1720.0, 1370846820], ...], },
+ *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
+ * ]
+ */
+func Get(key string, from int64, to int64) (ms []*Metrics) {
+	var js []byte
+	var data []map[string]interface{}
 
-	for _, mi := range m {
-		mm := new(Metrics)
-		mm.Key = key
-		if target, ok := mi["target"].(string); ok {
-			mm.Target = target
-		}
-		mm.Datapoints = make([][2]float64, 0)
-		if datapoints, ok := mi["datapoints"].([]interface{}); ok {
-			for _, dp := range datapoints {
-				dpi := dp.(string)
+	if client, err := db.Client(); err != nil {
+		log.Println(err)
+	} else {
+		defer db.Release(client)
 
-				var pt [2]float64
-				err := json.Unmarshal([]byte(dpi), &pt)
-				if err != nil {
-					log.Println(err)
-				}
-				mm.Datapoints = append(mm.Datapoints, pt)
+		if js, err = client.Cmd("EVALSHA", getSha, 1, key, from, to).Bytes(); err != nil {
+			log.Println(err)
+			if js, err = client.Cmd("EVAL", config.Cfg.Metrics.GetScript, 1, key, from, to).Bytes(); err != nil {
+				log.Println(err)
 			}
 		}
-		ms = append(ms, mm)
+
+		if err = json.Unmarshal(js, &data); err != nil {
+			log.Println(err)
+		}
 	}
-	return ms
+
+	for _, d := range data {
+		m := new(Metrics)
+		m.Key = key
+		if target, ok := d["target"].(string); ok {
+			m.Target = target
+		}
+
+		if datapoints, ok := d["datapoints"].([]interface{}); ok {
+			switch config.Cfg.Metrics.ConsolidationFunc {
+			case "avg":
+				m.Datapoints = consolidateByAvg(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
+			case "sum":
+				m.Datapoints = consolidateBySum(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
+			case "max":
+				m.Datapoints = consolidateByMax(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
+			case "min":
+				m.Datapoints = consolidateByMin(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
+
+			default:
+				for _, dp := range datapoints {
+					var pt [2]float64
+					if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
+						log.Println(err)
+						continue
+					}
+					m.Datapoints = append(m.Datapoints, pt)
+				}
+			}
+		}
+		ms = append(ms, m)
+	}
+	return
 }
 
 func Add(key string, value string, timestamp int64) {
@@ -123,29 +138,6 @@ func Add(key string, value string, timestamp int64) {
 	}
 }
 
-// Get queries for metrics which matches to the key pattern
-func Get(key string, from int64, to int64, limit int) []*Metrics {
-	var m []map[string]interface{}
-
-	if client, err := db.Client(); err != nil {
-		log.Println(err)
-	} else {
-		defer db.Release(client)
-
-		if data, err := client.Cmd("EVALSHA", getSha, 1, key, from, to, limit).Str(); err != nil {
-			log.Println(err)
-
-			if data, err = client.Cmd("EVAL", config.Cfg.Metrics.GetScript, 1, key, from, to, limit).Str(); err != nil {
-				log.Println(err)
-			}
-		} else {
-			json.Unmarshal([]byte(data), &m)
-		}
-	}
-
-	return newMetrics(key, m)
-}
-
 func Ttl(from int64, to int64) {
 	if client, err := db.Client(); err != nil {
 		log.Println(err)
@@ -164,4 +156,105 @@ func Ttl(from int64, to int64) {
 			log.Printf("ZREMRANGEBYSCORE(%d, %d): %v in %v", from, to, r, t1.Sub(t0))
 		}
 	}
+}
+
+/*
+ * Valid consolidation function names are 'sum', 'avg', 'min', and 'max'
+ */
+
+func consolidateBySum(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
+	for i := 0; from <= to; from += int64(step) {
+		var sum float64 = 0.0
+		for ; i < len(data); i++ {
+			var pt [2]float64
+			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
+				log.Println(err)
+				continue
+			}
+			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
+				sum += pt[0]
+			} else {
+				break
+			}
+		}
+		datapoints = append(datapoints, [2]float64{sum, float64(from)})
+	}
+	return
+}
+
+func consolidateByAvg(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
+	for i := 0; from <= to; from += int64(step) {
+		var sum float64 = 0.0
+		var n int = 0
+
+		for ; i < len(data); i++ {
+			var pt [2]float64
+			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
+				log.Println(err)
+				continue
+			}
+			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
+				sum += pt[0]
+				n++
+			} else {
+				break
+			}
+		}
+
+		if n > 0 {
+			sum /= float64(n)
+		}
+		datapoints = append(datapoints, [2]float64{sum, float64(from)})
+	}
+	return
+}
+
+func consolidateByMax(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
+	for i := 0; from <= to; from += int64(step) {
+		var max float64 = 0.0
+		for ; i < len(data); i++ {
+			var pt [2]float64
+			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
+				log.Println(err)
+				continue
+			}
+			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
+				if pt[0] > max {
+					max = pt[0]
+				}
+			} else {
+				break
+			}
+		}
+		datapoints = append(datapoints, [2]float64{max, float64(from)})
+	}
+	return
+}
+
+func consolidateByMin(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
+	for i := 0; from <= to; from += int64(step) {
+		var min float64 = math.MaxFloat64
+		var isset bool = false
+		for ; i < len(data); i++ {
+			var pt [2]float64
+			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
+				log.Println(err)
+				continue
+			}
+			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
+				if pt[0] < min {
+					min = pt[0]
+				}
+				isset = true
+			} else {
+				break
+			}
+		}
+		if !isset {
+			min = 0
+		}
+
+		datapoints = append(datapoints, [2]float64{min, float64(from)})
+	}
+	return
 }

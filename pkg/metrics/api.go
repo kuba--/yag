@@ -7,16 +7,7 @@ import (
 	"strings"
 )
 
-type Api struct {
-	// ...not used right now
-	maxDataPoints int
-}
-
-func NewApi(maxDataPoints int) *Api {
-	api := new(Api)
-	api.maxDataPoints = maxDataPoints
-	return api
-}
+type Api struct{}
 
 func (api *Api) Value(name string, from int64, to int64) interface{} {
 	log.Printf("Api.Value(%s, %d, %d)", name, from, to)
@@ -25,7 +16,7 @@ func (api *Api) Value(name string, from int64, to int64) interface{} {
 	if f, err := strconv.ParseFloat(name, 10); err == nil {
 		return f
 	}
-	return Get(name, from, to, api.maxDataPoints)
+	return Get(name, from, to)
 }
 
 func (api *Api) Call(name string, argv interface{}) interface{} {
@@ -41,11 +32,11 @@ func (api *Api) Call(name string, argv interface{}) interface{} {
 				}
 				switch strings.ToLower(name) {
 				case "sum", "sumseries":
-					return api.sum(m0)
+					return api.sumSeries(m0)
 				case "div", "divseries", "divideseries":
-					return api.div(m0)
+					return api.divSeries(m0)
 				case "diff", "diffseries":
-					return api.diff(m0)
+					return api.diffSeries(m0)
 				case "_":
 					return m0
 				default:
@@ -57,7 +48,7 @@ func (api *Api) Call(name string, argv interface{}) interface{} {
 	return nil
 }
 
-func (api *Api) sum(m []*Metrics) []*Metrics {
+func (api *Api) sumSeries(m []*Metrics) []*Metrics {
 
 	sm := make([]*Metrics, 0)
 	{
@@ -104,19 +95,13 @@ func (api *Api) sum(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-
-			s := new(Metrics)
-			s.Key = key
-			s.Target = fmt.Sprintf("sum(%s)", key)
-			s.Datapoints = dp0
-
-			sm = append(sm, s)
+			sm = append(sm, newMetrics(key, fmt.Sprintf("sum(%s)", key), dp0))
 		}
 	}
 	return sm
 }
 
-func (api *Api) div(m []*Metrics) []*Metrics {
+func (api *Api) divSeries(m []*Metrics) []*Metrics {
 	sm := make([]*Metrics, 0)
 	{
 		if n := len(m); n > 0 {
@@ -152,19 +137,13 @@ func (api *Api) div(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-
-			s := new(Metrics)
-			s.Key = key
-			s.Target = fmt.Sprintf("div(%s)", key)
-			s.Datapoints = dp0
-
-			sm = append(sm, s)
+			sm = append(sm, newMetrics(key, fmt.Sprintf("div(%s)", key), dp0))
 		}
 	}
 	return sm
 }
 
-func (api *Api) diff(m []*Metrics) []*Metrics {
+func (api *Api) diffSeries(m []*Metrics) []*Metrics {
 	sm := make([]*Metrics, 0)
 	{
 		if n := len(m); n > 0 {
@@ -210,13 +189,7 @@ func (api *Api) diff(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-
-			s := new(Metrics)
-			s.Key = key
-			s.Target = fmt.Sprintf("diff(%s)", key)
-			s.Datapoints = dp0
-
-			sm = append(sm, s)
+			sm = append(sm, newMetrics(key, fmt.Sprintf("diff(%s)", key), dp0))
 		}
 	}
 	return sm

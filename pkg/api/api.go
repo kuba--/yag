@@ -1,4 +1,4 @@
-package funcexp
+package api
 
 type Api interface {
 	Value(name string, from int64, to int64) interface{}
@@ -6,7 +6,6 @@ type Api interface {
 }
 
 func Eval(expr string, from int64, to int64, api Api) interface{} {
-
 	var exp *FuncExp = Compile(expr)
 	if exp == nil {
 		return nil

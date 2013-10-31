@@ -1,4 +1,4 @@
-package funcexp
+package api
 
 import "strings"
 

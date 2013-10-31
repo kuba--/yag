@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kuba--/yag/pkg/api"
 	"github.com/kuba--/yag/pkg/config"
-	"github.com/kuba--/yag/pkg/funcexp"
 	"github.com/kuba--/yag/pkg/metrics"
 )
 
@@ -68,7 +68,7 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		h.jsonResponse(w, funcexp.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
+		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, new(metrics.Api)))
 
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)

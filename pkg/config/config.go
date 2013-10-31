@@ -16,10 +16,12 @@ var Cfg struct {
 	}
 
 	Metrics struct {
-		GetScript string
-		AddScript string
-		TtlScript string
-		TTL       int
+		GetScript         string
+		AddScript         string
+		TtlScript         string
+		TTL               int
+		ConsolidationStep int
+		ConsolidationFunc string
 	}
 
 	Listener struct {
