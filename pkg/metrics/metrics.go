@@ -3,7 +3,6 @@ package metrics
 import (
 	"encoding/json"
 	"log"
-	"math"
 	"time"
 
 	"github.com/kuba--/yag/pkg/config"
@@ -45,13 +44,15 @@ func init() {
 	}
 }
 
+type Pt [2]*float64
+
 type Metrics struct {
 	Key        string
 	Target     string
-	Datapoints [][2]float64
+	Datapoints []Pt
 }
 
-func newMetrics(key, target string, datapoints [][2]float64) (m *Metrics) {
+func newMetrics(key, target string, datapoints []Pt) (m *Metrics) {
 	m = new(Metrics)
 	m.Key, m.Target, m.Datapoints = key, target, datapoints
 	return
@@ -94,25 +95,17 @@ func Get(key string, from int64, to int64) (ms []*Metrics) {
 		}
 
 		if datapoints, ok := d["datapoints"].([]interface{}); ok {
-			switch config.Cfg.Metrics.ConsolidationFunc {
-			case "avg":
-				m.Datapoints = consolidateByAvg(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
-			case "sum":
-				m.Datapoints = consolidateBySum(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
-			case "max":
-				m.Datapoints = consolidateByMax(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
-			case "min":
-				m.Datapoints = consolidateByMin(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep)
-
-			default:
+			if config.Cfg.Metrics.ConsolidationStep < 1 || len(config.Cfg.Metrics.ConsolidationFunc) < 1 {
 				for _, dp := range datapoints {
-					var pt [2]float64
+					var pt Pt
 					if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
 						log.Println(err)
 						continue
 					}
 					m.Datapoints = append(m.Datapoints, pt)
 				}
+			} else {
+				m.Datapoints = consolidateBy(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep, config.Cfg.Metrics.ConsolidationFunc)
 			}
 		}
 		ms = append(ms, m)
@@ -161,100 +154,63 @@ func Ttl(from int64, to int64) {
 /*
  * Valid consolidation function names are 'sum', 'avg', 'min', and 'max'
  */
-
-func consolidateBySum(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
+func consolidateBy(data []interface{}, from, to int64, step int, fn string) (datapoints []Pt) {
 	for i := 0; from <= to; from += int64(step) {
-		var sum float64 = 0.0
-		for ; i < len(data); i++ {
-			var pt [2]float64
-			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
-				log.Println(err)
-				continue
-			}
-			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
-				sum += pt[0]
-			} else {
-				break
-			}
-		}
-		datapoints = append(datapoints, [2]float64{sum, float64(from)})
-	}
-	return
-}
-
-func consolidateByAvg(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
-	for i := 0; from <= to; from += int64(step) {
-		var sum float64 = 0.0
+		var isset bool = false
 		var n int = 0
 
+		var sum, max, min, ts *float64 = new(float64), nil, nil, new(float64)
+		*sum, *ts = 0.0, float64(from)
+
 		for ; i < len(data); i++ {
-			var pt [2]float64
+			var pt Pt
 			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
 				log.Println(err)
 				continue
 			}
-			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
-				sum += pt[0]
+			if pt[1] != nil && int64(*pt[1]) >= from && int64(*pt[1]) < from+int64(step) {
+				*sum = *sum + *pt[0]
+
+				if max == nil {
+					max = new(float64)
+					*max = *pt[0]
+				} else {
+					if *max < *pt[0] {
+						*max = *pt[0]
+					}
+				}
+
+				if min == nil {
+					min = new(float64)
+					*min = *pt[0]
+				} else {
+					if *min > *pt[0] {
+						*min = *pt[0]
+					}
+				}
+
 				n++
-			} else {
-				break
-			}
-		}
-
-		if n > 0 {
-			sum /= float64(n)
-		}
-		datapoints = append(datapoints, [2]float64{sum, float64(from)})
-	}
-	return
-}
-
-func consolidateByMax(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
-	for i := 0; from <= to; from += int64(step) {
-		var max float64 = 0.0
-		for ; i < len(data); i++ {
-			var pt [2]float64
-			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
-				log.Println(err)
-				continue
-			}
-			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
-				if pt[0] > max {
-					max = pt[0]
-				}
-			} else {
-				break
-			}
-		}
-		datapoints = append(datapoints, [2]float64{max, float64(from)})
-	}
-	return
-}
-
-func consolidateByMin(data []interface{}, from, to int64, step int) (datapoints [][2]float64) {
-	for i := 0; from <= to; from += int64(step) {
-		var min float64 = math.MaxFloat64
-		var isset bool = false
-		for ; i < len(data); i++ {
-			var pt [2]float64
-			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
-				log.Println(err)
-				continue
-			}
-			if int64(pt[1]) >= from && int64(pt[1]) < from+int64(step) {
-				if pt[0] < min {
-					min = pt[0]
-				}
 				isset = true
 			} else {
 				break
 			}
 		}
-		if !isset {
-			min = 0
-		}
 
-		datapoints = append(datapoints, [2]float64{min, float64(from)})
+		var value *float64 = nil
+		if isset {
+			value = new(float64)
+			switch fn {
+			case "sum":
+				*value = *sum
+			case "avg":
+				*value = *sum / float64(n)
+			case "max":
+				*value = *max
+			case "min":
+				*value = *min
+			}
+		}
+		datapoints = append(datapoints, Pt{value, ts})
 	}
 	return
 }

@@ -57,40 +57,67 @@ func (api *Api) sumSeries(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][2]float64, 0)
+				datapoints := make([]Pt, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
 
 				for i0 < n0 && i1 < n1 {
-					v0, ts0 := dp0[i0][0], dp0[i0][1]
-					v1, ts1 := dp1[i1][0], dp1[i1][1]
-					its0, its1 := int64(ts0), int64(ts1)
+					pt0 := dp0[i0]
+					pt1 := dp1[i1]
+					ts0, ts1 := int64(*pt0[1]), int64(*pt1[1])
 
+					pt := Pt{nil, new(float64)}
 					switch {
-					case its0 == its1:
-						datapoints = append(datapoints, [2]float64{v0 + v1, ts0})
+					case ts0 == ts1:
+						*pt[1] = *pt0[1]
+
+						if pt0[0] != nil || pt1[0] != nil {
+							pt[0] = new(float64)
+							if pt0[0] != nil {
+								*pt[0] = *pt[0] + *pt0[0]
+							}
+							if pt1[0] != nil {
+								*pt[0] = *pt[0] + *pt1[0]
+							}
+						}
+
+						datapoints = append(datapoints, pt)
 						i0++
 						i1++
 						continue
 
-					case its0 < its1:
-						datapoints = append(datapoints, [2]float64{v0, ts0})
+					case ts0 < ts1:
+						*pt[1] = *pt0[1]
+
+						if pt0[0] != nil {
+							pt[0] = new(float64)
+							*pt[0] = *pt0[0]
+						}
+
+						datapoints = append(datapoints, pt)
 						i0++
 						continue
 
-					case its0 > its1:
-						datapoints = append(datapoints, [2]float64{v1, ts1})
+					case ts0 > ts1:
+						*pt[1] = *pt1[1]
+
+						if pt1[0] != nil {
+							pt[0] = new(float64)
+							*pt[0] = *pt1[0]
+						}
+
+						datapoints = append(datapoints, pt)
 						i1++
 					}
 				}
 
 				for ; i0 < n0; i0++ {
-					datapoints = append(datapoints, [2]float64{dp0[i0][0], dp0[i0][1]})
+					datapoints = append(datapoints, dp0[i0])
 				}
 
 				for ; i1 < n1; i1++ {
-					datapoints = append(datapoints, [2]float64{dp1[i1][0], dp1[i1][1]})
+					datapoints = append(datapoints, dp1[i1])
 				}
 
 				dp0 = datapoints
@@ -109,28 +136,36 @@ func (api *Api) divSeries(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][2]float64, 0)
+				datapoints := make([]Pt, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
 
 				for i0 < n0 && i1 < n1 {
-					v0, ts0 := dp0[i0][0], dp0[i0][1]
-					v1, ts1 := dp1[i1][0], dp1[i1][1]
-					its0, its1 := int64(ts0), int64(ts1)
+					pt0 := dp0[i0]
+					pt1 := dp1[i1]
+					ts0, ts1 := int64(*pt0[1]), int64(*pt1[1])
 
 					switch {
-					case its0 == its1:
-						datapoints = append(datapoints, [2]float64{v0 / v1, ts0})
+					case ts0 == ts1:
+						pt := Pt{nil, new(float64)}
+						*pt[1] = *pt0[1]
+
+						if pt0[0] != nil && pt1[0] != nil && *pt1[0] != 0 {
+							pt[0] = new(float64)
+							*pt[0] = *pt0[0] / *pt1[0]
+						}
+
+						datapoints = append(datapoints, pt)
 						i0++
 						i1++
 						continue
 
-					case its0 < its1:
+					case ts0 < ts1:
 						i0++
 						continue
 
-					case its0 > its1:
+					case ts0 > ts1:
 						i1++
 					}
 				}
@@ -151,40 +186,65 @@ func (api *Api) diffSeries(m []*Metrics) []*Metrics {
 			dp0 := m[0].Datapoints
 
 			for i := 1; i < n; i++ {
-				datapoints := make([][2]float64, 0)
+				datapoints := make([]Pt, 0)
 				dp1 := m[i].Datapoints
 				i0, n0 := 0, len(dp0)
 				i1, n1 := 0, len(dp1)
 
 				for i0 < n0 && i1 < n1 {
-					v0, ts0 := dp0[i0][0], dp0[i0][1]
-					v1, ts1 := dp1[i1][0], dp1[i1][1]
-					its0, its1 := int64(ts0), int64(ts1)
+					pt0 := dp0[i0]
+					pt1 := dp1[i1]
+					ts0, ts1 := int64(*pt0[1]), int64(*pt1[1])
 
+					pt := Pt{nil, new(float64)}
 					switch {
-					case its0 == its1:
-						datapoints = append(datapoints, [2]float64{v0 - v1, ts0})
+					case ts0 == ts1:
+						*pt[1] = *pt0[1]
+
+						if pt0[0] != nil || pt1[0] != nil {
+							pt[0] = new(float64)
+							if pt0[0] != nil {
+								*pt[0] = *pt0[0]
+							}
+							if pt1[0] != nil {
+								*pt[0] = *pt[0] - *pt1[0]
+							}
+						}
+
+						datapoints = append(datapoints, pt)
 						i0++
 						i1++
 						continue
 
-					case its0 < its1:
-						datapoints = append(datapoints, [2]float64{v0, ts0})
+					case ts0 < ts1:
+						*pt[1] = *pt0[1]
+						if pt0[0] != nil {
+							pt[0] = new(float64)
+							*pt[0] = *pt0[0]
+						}
+
+						datapoints = append(datapoints, pt)
 						i0++
 						continue
 
-					case its0 > its1:
-						datapoints = append(datapoints, [2]float64{v1, ts1})
+					case ts0 > ts1:
+						*pt[1] = *pt1[1]
+						if pt1[0] != nil {
+							pt[0] = new(float64)
+							*pt[0] = *pt1[0]
+						}
+
+						datapoints = append(datapoints, pt)
 						i1++
 					}
 				}
 
 				for ; i0 < n0; i0++ {
-					datapoints = append(datapoints, [2]float64{dp0[i0][0], dp0[i0][1]})
+					datapoints = append(datapoints, dp0[i0])
 				}
 
 				for ; i1 < n1; i1++ {
-					datapoints = append(datapoints, [2]float64{dp1[i1][0], dp1[i1][1]})
+					datapoints = append(datapoints, dp1[i1])
 				}
 
 				dp0 = datapoints

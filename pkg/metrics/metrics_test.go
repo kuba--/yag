@@ -13,18 +13,22 @@ func ExampleConsolidateByAvg() {
 	if err := json.Unmarshal([]byte(js), &data); err != nil {
 		fmt.Println(err)
 	} else {
-		datapoints := consolidateByAvg(data, 1370846820, 1370847060, 60)
+		datapoints := consolidateBy(data, 1370846820, 1370847060, 60, "avg")
 		for _, dp := range datapoints {
-			fmt.Printf("[%.1f, %.0f]\n", dp[0], dp[1])
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.1f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 
 	// Output:
 	//[1720.0, 1370846820]
 	//[1653.0, 1370846880]
-	//[0.0, 1370846940]
+	//[null, 1370846940]
 	//[1538.0, 1370847000]
-	//[0.0, 1370847060]
+	//[null, 1370847060]
 }
 
 func ExampleConsolidateBySum() {
@@ -34,19 +38,23 @@ func ExampleConsolidateBySum() {
 	if err := json.Unmarshal([]byte(js), &data); err != nil {
 		fmt.Println(err)
 	} else {
-		datapoints := consolidateBySum(data, 0, 50, 10)
+		datapoints := consolidateBy(data, 0, 50, 10, "sum")
 		for _, dp := range datapoints {
-			fmt.Printf("[%.1f, %.0f]\n", dp[0], dp[1])
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.1f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 
 	// Output:
 	//[7.0, 0]
-	//[0.0, 10]
+	//[null, 10]
 	//[3.0, 20]
 	//[8.0, 30]
-	//[0.0, 40]
-	//[0.0, 50]
+	//[null, 40]
+	//[null, 50]
 }
 
 func ExampleConsolidateByMax() {
@@ -56,19 +64,23 @@ func ExampleConsolidateByMax() {
 	if err := json.Unmarshal([]byte(js), &data); err != nil {
 		fmt.Println(err)
 	} else {
-		datapoints := consolidateByMax(data, 0, 50, 10)
+		datapoints := consolidateBy(data, 0, 50, 10, "max")
 		for _, dp := range datapoints {
-			fmt.Printf("[%.1f, %.0f]\n", dp[0], dp[1])
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.1f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 
 	// Output:
 	//[1.6, 0]
-	//[0.0, 10]
+	//[null, 10]
 	//[3.0, 20]
 	//[4.1, 30]
-	//[0.0, 40]
-	//[0.0, 50]
+	//[null, 40]
+	//[null, 50]
 }
 
 func ExampleConsolidateByMin() {
@@ -78,17 +90,21 @@ func ExampleConsolidateByMin() {
 	if err := json.Unmarshal([]byte(js), &data); err != nil {
 		fmt.Println(err)
 	} else {
-		datapoints := consolidateByMin(data, 0, 50, 10)
+		datapoints := consolidateBy(data, 0, 50, 10, "min")
 		for _, dp := range datapoints {
-			fmt.Printf("[%.1f, %.0f]\n", dp[0], dp[1])
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.1f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 
 	// Output:
 	//[1.0, 0]
-	//[0.0, 10]
+	//[null, 10]
 	//[3.0, 20]
 	//[4.0, 30]
-	//[0.0, 40]
-	//[0.0, 50]
+	//[null, 40]
+	//[null, 50]
 }

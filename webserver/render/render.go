@@ -79,8 +79,8 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
  * JSON Response:
  * [
  *  {"target": "status.200", "datapoints": [[1720.0, 1370846820], ...], },
- *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
- * ]
+ *  {"target": "status.204", "datapoints": [[null, 1370846820], ..., ]}
+ * ]s
  */
 func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 	if m, ok := data.([]*metrics.Metrics); ok {
@@ -102,7 +102,13 @@ func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 				if ii > 0 {
 					fmt.Fprintf(w, ",")
 				}
-				fmt.Fprintf(w, "[%.2f, %.0f]", mi.Datapoints[ii][0], mi.Datapoints[ii][1])
+
+				val := "null"
+				if mi.Datapoints[ii][0] != nil {
+					val = fmt.Sprintf("%.2f", *mi.Datapoints[ii][0])
+				}
+
+				fmt.Fprintf(w, "[%s, %.0f]", val, *mi.Datapoints[ii][1])
 			}
 			fmt.Fprintf(w, "]}")
 

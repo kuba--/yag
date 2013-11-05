@@ -21,7 +21,11 @@ func ExampleSumSeries() {
 	} else {
 		m := new(Api).sumSeries(m)[0]
 		for _, dp := range m.Datapoints {
-			fmt.Printf("[%.2f, %.0f]\n", dp[0], dp[1])
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.2f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 	// Output:
@@ -54,7 +58,7 @@ func TestEqual(t *testing.T) {
 		for i := 0; i < ld1; i++ {
 			v1, t1 := d1[i][0], d1[i][1]
 			v2, t2 := d2[i][0], d2[i][1]
-			if t1 != t2 || v1 != v2 {
+			if *t1 != *t2 || (v1 != nil && v2 != nil && *v1 != *v2) || (v1 == nil && v2 != nil) || (v1 != nil && v2 == nil) {
 				return false
 			}
 		}
@@ -67,26 +71,26 @@ func TestEqual(t *testing.T) {
 	if err := json.Unmarshal([]byte(d1), &data1); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d1", "d1", consolidateByAvg(data1, 1370846820, 1370847060, 60)))
+		m1 = append(m1, newMetrics("d1", "d1", consolidateBy(data1, 1370846820, 1370847060, 60, "avg")))
 	}
 
 	if err := json.Unmarshal([]byte(d2), &data2); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d2", "d2", consolidateByAvg(data2, 1370846820, 1370847060, 60)))
+		m1 = append(m1, newMetrics("d2", "d2", consolidateBy(data2, 1370846820, 1370847060, 60, "avg")))
 	}
 
 	if err := json.Unmarshal([]byte(d3), &data3); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d3", "d3", consolidateByAvg(data3, 1370846820, 1370847060, 60)))
+		m1 = append(m1, newMetrics("d3", "d3", consolidateBy(data3, 1370846820, 1370847060, 60, "avg")))
 	}
 
 	var m2 []*Metrics
 	if err := json.Unmarshal([]byte(d123), &data123); err != nil {
 		t.Error(err)
 	} else {
-		m2 = append(m2, newMetrics("d123", "d123", consolidateByAvg(data123, 1370846820, 1370847060, 60)))
+		m2 = append(m2, newMetrics("d123", "d123", consolidateBy(data123, 1370846820, 1370847060, 60, "avg")))
 	}
 
 	m1 = new(Api).sumSeries(m1)
