@@ -59,7 +59,7 @@ type RenderHandler struct {
 	maxDataPoints int
 }
 
-// GET: /render?target=my.key&from=-1.5h[&to=...&jsonp=...]
+// GET: /render?target=my.key&from=-1h[&to=...&jsonp=...]
 func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -87,18 +87,13 @@ func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 		w.WriteHeader(http.StatusOK)
 
 		fmt.Fprintf(w, "%s([", h.jsonp)
-		var i int = 0
-		for _, mi := range m {
-			n := len(mi.Datapoints)
-			if n < 1 {
-				continue
-			}
+		for i, mi := range m {
 			if i > 0 {
 				fmt.Fprintf(w, ",")
 			}
 
 			fmt.Fprintf(w, `{"target":"%s","datapoints":[`, mi.Target)
-			for ii := 0; ii < n; ii++ {
+			for ii := 0; ii < len(mi.Datapoints); ii++ {
 				if ii > 0 {
 					fmt.Fprintf(w, ",")
 				}
@@ -111,8 +106,6 @@ func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 				fmt.Fprintf(w, "[%s, %.0f]", val, *mi.Datapoints[ii][1])
 			}
 			fmt.Fprintf(w, "]}")
-
-			i++
 		}
 		fmt.Fprintf(w, "])")
 	} else {

@@ -9,7 +9,11 @@ import (
 	"github.com/kuba--/yag/pkg/db"
 )
 
-var addSha, getSha, ttlSha string
+var (
+	addSha string
+	getSha string
+	ttlSha string
+)
 
 func init() {
 	if client, err := db.Client(); err != nil {
@@ -94,19 +98,22 @@ func Get(key string, from int64, to int64) (ms []*Metrics) {
 			m.Target = target
 		}
 
-		if datapoints, ok := d["datapoints"].([]interface{}); ok {
-			if config.Cfg.Metrics.ConsolidationStep < 1 || len(config.Cfg.Metrics.ConsolidationFunc) < 1 {
-				for _, dp := range datapoints {
-					var pt Pt
-					if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
-						log.Println(err)
-						continue
-					}
-					m.Datapoints = append(m.Datapoints, pt)
+		datapoints, ok := d["datapoints"].([]interface{})
+		if !ok {
+			datapoints = make([]interface{}, 0)
+		}
+
+		if config.Cfg.Metrics.ConsolidationStep < 1 || len(config.Cfg.Metrics.ConsolidationFunc) < 1 {
+			for _, dp := range datapoints {
+				var pt Pt
+				if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
+					log.Println(err)
+					continue
 				}
-			} else {
-				m.Datapoints = consolidateBy(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep, config.Cfg.Metrics.ConsolidationFunc)
+				m.Datapoints = append(m.Datapoints, pt)
 			}
+		} else {
+			m.Datapoints = consolidateBy(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep, config.Cfg.Metrics.ConsolidationFunc)
 		}
 		ms = append(ms, m)
 	}
@@ -166,7 +173,7 @@ func consolidateBy(data []interface{}, from, to int64, step int, fn string) (dat
 			var pt Pt
 			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
 				log.Println(err)
-				continue
+				break
 			}
 			if pt[1] != nil && int64(*pt[1]) >= from && int64(*pt[1]) < from+int64(step) {
 				*sum = *sum + *pt[0]
