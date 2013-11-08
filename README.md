@@ -88,33 +88,36 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 	{
 		"DB":{                           // Database section
-			"Addr":"localhost:6379", // address and port of Redis DB
-			"Timeout":30,            // timeout per connection (in seconds)
-			"MaxClients":30          // maximum number of clients in DB connection pool
+			"Addr":"localhost:6379",     // address and port of Redis DB
+			"Timeout":30,                // timeout per connection (in seconds)
+			"MaxClients":30              // maximum number of clients in DB connection pool
 		},
 		"Metrics":{                      // Metrics section
-			"GetScript":"get.lua",   // relative path to get script
-			"AddScript":"add.lua",   // relative path to add script					
-			"TtlScript":"ttl.lua",   // relative path to ttl script
-			"TTL":86600              // time to live per metric (in seconds)
+			"GetScript":"get.lua",       // relative path to get script
+			"AddScript":"add.lua",       // relative path to add script					
+			"TtlScript":"ttl.lua",       // relative path to ttl script
+			"TTL":86600,                 // time to live per metric (in seconds)
+			"ConsolidationStep":60,      // consolidate datapoints per step (in seconds).
+            "ConsolidationFunc":"avg"    // function used to consolidate datapoints (valid function names: sum, avg, min, max)
 		},
 		"Listener":{                     // Listener server section 
-			"Addr":":2003"           // local address and port
+			"Addr":":2003"               // local address and port
 		},
 		"Webserver":{                    // Webserver section
-			"Addr":":8080",          // local address and port
-			"Timeout":30             // timeout per connection (in seconds)
+			"Addr":":8080",              // local address and port
+			"Timeout":30                 // timeout per connection (in seconds)
 		},
 		"TTL":{                          // TTL daemon section
-			"Tick":12                // timers tick (in seconds)
+			"Tick":12                    // timers tick (in seconds)
 		}
 	}
 
+**Note:** if you remove properties: "ConsolidationStep", "ConsolidationFunc" properties from config file, webserver will not consolidate datapoints
+
+
 ## TODO
-* Consolidate datapoints to improve rendering performance (support for maxDataPoints).
+* Support for maxDataPoints
 * Add more functions
-* Uncaught stacked series cannot have differing numbers of points: 10 vs 251; see Rickshaw.Series.fill() 
-[http://beecy.net/post/2009/04/15/fixing-data-series-for-chart-cannot-have-different-number-of-data-points.aspx]
 
 
  
