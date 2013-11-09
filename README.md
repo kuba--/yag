@@ -112,7 +112,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 		}
 	}
 
-**Note:** if you remove properties: "ConsolidationStep", "ConsolidationFunc" properties from config file, webserver will not consolidate datapoints
+**Note:** if you remove properties: "ConsolidationStep", "ConsolidationFunc" from config file, webserver will not consolidate datapoints
 
 
 ## TODO
