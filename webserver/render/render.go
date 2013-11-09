@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kuba--/yag/pkg/api"
 	"github.com/kuba--/yag/pkg/config"
-	"github.com/kuba--/yag/pkg/funcexp"
 	"github.com/kuba--/yag/pkg/metrics"
 )
 
@@ -59,7 +59,7 @@ type RenderHandler struct {
 	maxDataPoints int
 }
 
-// GET: /render?target=my.key&from=-1.5h[&to=...&jsonp=...]
+// GET: /render?target=my.key&from=-1h[&to=...&jsonp=...]
 func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
@@ -68,7 +68,7 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		h.jsonResponse(w, funcexp.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
+		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, new(metrics.Api)))
 
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -79,34 +79,33 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
  * JSON Response:
  * [
  *  {"target": "status.200", "datapoints": [[1720.0, 1370846820], ...], },
- *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
- * ]
+ *  {"target": "status.204", "datapoints": [[null, 1370846820], ..., ]}
+ * ]s
  */
 func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 	if m, ok := data.([]*metrics.Metrics); ok {
 		w.WriteHeader(http.StatusOK)
 
 		fmt.Fprintf(w, "%s([", h.jsonp)
-		var i int = 0
-		for _, mi := range m {
-			n := len(mi.Datapoints)
-			if n < 1 {
-				continue
-			}
+		for i, mi := range m {
 			if i > 0 {
 				fmt.Fprintf(w, ",")
 			}
 
 			fmt.Fprintf(w, `{"target":"%s","datapoints":[`, mi.Target)
-			for ii := 0; ii < n; ii++ {
+			for ii := 0; ii < len(mi.Datapoints); ii++ {
 				if ii > 0 {
 					fmt.Fprintf(w, ",")
 				}
-				fmt.Fprintf(w, "[%.2f, %.0f]", mi.Datapoints[ii][0], mi.Datapoints[ii][1])
+
+				val := "null"
+				if mi.Datapoints[ii][0] != nil {
+					val = fmt.Sprintf("%.2f", *mi.Datapoints[ii][0])
+				}
+
+				fmt.Fprintf(w, "[%s, %.0f]", val, *mi.Datapoints[ii][1])
 			}
 			fmt.Fprintf(w, "]}")
-
-			i++
 		}
 		fmt.Fprintf(w, "])")
 	} else {

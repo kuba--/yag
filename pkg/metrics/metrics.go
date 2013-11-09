@@ -9,7 +9,11 @@ import (
 	"github.com/kuba--/yag/pkg/db"
 )
 
-var addSha, getSha, ttlSha string
+var (
+	addSha string
+	getSha string
+	ttlSha string
+)
 
 func init() {
 	if client, err := db.Client(); err != nil {
@@ -44,65 +48,76 @@ func init() {
 	}
 }
 
+type Pt [2]*float64
+
+type Metrics struct {
+	Key        string
+	Target     string
+	Datapoints []Pt
+}
+
+func newMetrics(key, target string, datapoints []Pt) (m *Metrics) {
+	m = new(Metrics)
+	m.Key, m.Target, m.Datapoints = key, target, datapoints
+	return
+}
+
 /*
+ * Get queries for metrics which matches to the key pattern (e.g.: status.*)
+ *
  * [
  *  {"target": "status.200", "datapoints": [[1720.0, 1370846820], ...], },
  *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
  * ]
  */
-type Metrics struct {
-	Key        string
-	Target     string
-	Datapoints [][2]float64
-}
+func Get(key string, from int64, to int64) (ms []*Metrics) {
+	var js []byte
+	var data []map[string]interface{}
 
-func (m1 *Metrics) isEqual(m2 *Metrics) bool {
-	if m2 == nil {
-		return false
-	}
+	if client, err := db.Client(); err != nil {
+		log.Println(err)
+	} else {
+		defer db.Release(client)
 
-	d1, d2 := m1.Datapoints, m2.Datapoints
-	ld1, ld2 := len(d1), len(d2)
-	if ld1 != ld2 {
-		return false
-	}
-
-	for i := 0; i < ld1; i++ {
-		v1, t1 := d1[i][0], d1[i][1]
-		v2, t2 := d2[i][0], d2[i][1]
-		if t1 != t2 || v1 != v2 {
-			return false
-		}
-	}
-
-	return true
-}
-
-func newMetrics(key string, m []map[string]interface{}) []*Metrics {
-	ms := make([]*Metrics, 0)
-
-	for _, mi := range m {
-		mm := new(Metrics)
-		mm.Key = key
-		if target, ok := mi["target"].(string); ok {
-			mm.Target = target
-		}
-		mm.Datapoints = make([][2]float64, 0)
-		if datapoints, ok := mi["datapoints"].([]interface{}); ok {
-			for _, dp := range datapoints {
-				dpi := dp.(string)
-
-				var pt [2]float64
-				err := json.Unmarshal([]byte(dpi), &pt)
-				if err != nil {
-					log.Println(err)
-				}
-				mm.Datapoints = append(mm.Datapoints, pt)
+		if js, err = client.Cmd("EVALSHA", getSha, 1, key, from, to).Bytes(); err != nil {
+			log.Println(err)
+			if js, err = client.Cmd("EVAL", config.Cfg.Metrics.GetScript, 1, key, from, to).Bytes(); err != nil {
+				log.Println(err)
 			}
 		}
-		ms = append(ms, mm)
+
+		if err = json.Unmarshal(js, &data); err != nil {
+			log.Println(err)
+		}
 	}
-	return ms
+
+	for _, d := range data {
+		m := new(Metrics)
+		m.Key = key
+		if target, ok := d["target"].(string); ok {
+			m.Target = target
+		}
+
+		datapoints, ok := d["datapoints"].([]interface{})
+		if !ok {
+			datapoints = make([]interface{}, 0)
+		}
+
+		if config.Cfg.Metrics.ConsolidationStep < 1 || len(config.Cfg.Metrics.ConsolidationFunc) < 1 {
+			for _, dp := range datapoints {
+				var pt Pt
+				if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
+					log.Println(err)
+					continue
+				}
+				m.Datapoints = append(m.Datapoints, pt)
+			}
+		} else {
+			m.Datapoints = consolidateBy(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep, config.Cfg.Metrics.ConsolidationFunc)
+		}
+		ms = append(ms, m)
+	}
+	return
 }
 
 func Add(key string, value string, timestamp int64) {
@@ -123,29 +138,6 @@ func Add(key string, value string, timestamp int64) {
 	}
 }
 
-// Get queries for metrics which matches to the key pattern
-func Get(key string, from int64, to int64, limit int) []*Metrics {
-	var m []map[string]interface{}
-
-	if client, err := db.Client(); err != nil {
-		log.Println(err)
-	} else {
-		defer db.Release(client)
-
-		if data, err := client.Cmd("EVALSHA", getSha, 1, key, from, to, limit).Str(); err != nil {
-			log.Println(err)
-
-			if data, err = client.Cmd("EVAL", config.Cfg.Metrics.GetScript, 1, key, from, to, limit).Str(); err != nil {
-				log.Println(err)
-			}
-		} else {
-			json.Unmarshal([]byte(data), &m)
-		}
-	}
-
-	return newMetrics(key, m)
-}
-
 func Ttl(from int64, to int64) {
 	if client, err := db.Client(); err != nil {
 		log.Println(err)
@@ -164,4 +156,69 @@ func Ttl(from int64, to int64) {
 			log.Printf("ZREMRANGEBYSCORE(%d, %d): %v in %v", from, to, r, t1.Sub(t0))
 		}
 	}
+}
+
+/*
+ * Valid consolidation function names are 'sum', 'avg', 'min', and 'max'
+ */
+func consolidateBy(data []interface{}, from, to int64, step int, fn string) (datapoints []Pt) {
+	for i := 0; from <= to; from += int64(step) {
+		var (
+			isset             bool     = false
+			n                 int      = 0
+			sum, max, min, ts *float64 = new(float64), nil, nil, new(float64)
+		)
+		*sum, *ts = 0.0, float64(from)
+
+		for ; i < len(data); i++ {
+			var pt Pt
+			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
+				log.Println(err)
+				break
+			}
+			if pt[1] != nil && int64(*pt[1]) >= from && int64(*pt[1]) < from+int64(step) {
+				*sum = *sum + *pt[0]
+
+				if max == nil {
+					max = new(float64)
+					*max = *pt[0]
+				} else {
+					if *max < *pt[0] {
+						*max = *pt[0]
+					}
+				}
+
+				if min == nil {
+					min = new(float64)
+					*min = *pt[0]
+				} else {
+					if *min > *pt[0] {
+						*min = *pt[0]
+					}
+				}
+
+				n++
+				isset = true
+			} else {
+				break
+			}
+		}
+
+		var value *float64 = nil
+		if isset {
+			value = new(float64)
+			switch fn {
+			case "sum":
+				*value = *sum
+			case "avg":
+				*value = *sum / float64(n)
+			case "max":
+				*value = *max
+			case "min":
+				*value = *min
+			}
+		}
+		datapoints = append(datapoints, Pt{value, ts})
+	}
+	return
 }

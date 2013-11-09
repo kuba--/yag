@@ -8,7 +8,11 @@
     "GetScript":"get.lua",
     "AddScript":"add.lua",    
     "TtlScript":"ttl.lua",
-    "TTL":86600
+    
+    "TTL":86600,
+
+    "ConsolidationStep":60,
+    "ConsolidationFunc":"avg"
   },
   "Listener":{
     "Addr":":2003"
