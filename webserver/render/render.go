@@ -68,7 +68,7 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, new(metrics.Api)))
+		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
 
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)

@@ -7,7 +7,15 @@ import (
 	"strings"
 )
 
-type Api struct{}
+type Api struct {
+	maxDataPoints int
+}
+
+func NewApi(maxDataPoints int) *Api {
+	api := new(Api)
+	api.maxDataPoints = maxDataPoints
+	return api
+}
 
 func (api *Api) Value(name string, from int64, to int64) interface{} {
 	log.Printf("Api.Value(%s, %d, %d)", name, from, to)
@@ -16,7 +24,7 @@ func (api *Api) Value(name string, from int64, to int64) interface{} {
 	if f, err := strconv.ParseFloat(name, 10); err == nil {
 		return f
 	}
-	return Get(name, from, to)
+	return Get(name, from, to, api.maxDataPoints)
 }
 
 func (api *Api) Call(name string, argv interface{}) interface{} {

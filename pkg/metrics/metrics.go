@@ -3,6 +3,7 @@ package metrics
 import (
 	"encoding/json"
 	"log"
+	"math"
 	"time"
 
 	"github.com/kuba--/yag/pkg/config"
@@ -70,7 +71,7 @@ func newMetrics(key, target string, datapoints []Pt) (m *Metrics) {
  *  {"target": "status.204", "datapoints": [[1.0, 1370846820], ..., ]}
  * ]
  */
-func Get(key string, from int64, to int64) (ms []*Metrics) {
+func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 	var js []byte
 	var data []map[string]interface{}
 
@@ -113,7 +114,14 @@ func Get(key string, from int64, to int64) (ms []*Metrics) {
 				m.Datapoints = append(m.Datapoints, pt)
 			}
 		} else {
-			m.Datapoints = consolidateBy(datapoints, from, to, config.Cfg.Metrics.ConsolidationStep, config.Cfg.Metrics.ConsolidationFunc)
+			step := config.Cfg.Metrics.ConsolidationStep
+			numberOfDataPoints := int(math.Ceil(float64(to-from) / float64(step)))
+
+			if maxDataPoints > 0 && numberOfDataPoints > maxDataPoints {
+				step *= numberOfDataPoints / maxDataPoints
+			}
+
+			m.Datapoints = consolidateBy(datapoints, from, to, step, config.Cfg.Metrics.ConsolidationFunc)
 		}
 		ms = append(ms, m)
 	}
