@@ -114,13 +114,7 @@ func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 				m.Datapoints = append(m.Datapoints, pt)
 			}
 		} else {
-			step := config.Cfg.Metrics.ConsolidationStep
-			numberOfDataPoints := int(math.Ceil(float64(to-from) / float64(step)))
-
-			if maxDataPoints > 0 && numberOfDataPoints > maxDataPoints {
-				step *= numberOfDataPoints / maxDataPoints
-			}
-
+			step := consolidationStep(from, to, config.Cfg.Metrics.ConsolidationStep, maxDataPoints)
 			m.Datapoints = consolidateBy(datapoints, from, to, step, config.Cfg.Metrics.ConsolidationFunc)
 		}
 		ms = append(ms, m)
@@ -164,6 +158,15 @@ func Ttl(from int64, to int64) {
 			log.Printf("ZREMRANGEBYSCORE(%d, %d): %v in %v", from, to, r, t1.Sub(t0))
 		}
 	}
+}
+
+func consolidationStep(from, to int64, step, maxDataPoints int) int {
+	numberOfDataPoints := int(math.Ceil(float64(to-from) / float64(step)))
+
+	if maxDataPoints > 0 && numberOfDataPoints > maxDataPoints {
+		step *= int(numberOfDataPoints / maxDataPoints)
+	}
+	return step
 }
 
 /*

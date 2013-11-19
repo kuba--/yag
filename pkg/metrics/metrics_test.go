@@ -5,6 +5,38 @@ import (
 	"fmt"
 )
 
+func ExampleMaxDataPoints() {
+	const js = `["[0,1384613389]","[0,1384613399]","[0,1384613409]","[0.5,1384613419]","[0.75,1384614209]"]`
+	var (
+		data          []interface{}
+		maxDataPoints int   = 7
+		from, to      int64 = 1384613389, 1384614209
+	)
+	step := consolidationStep(from, to, 60, maxDataPoints)
+
+	if err := json.Unmarshal([]byte(js), &data); err != nil {
+		fmt.Println(err)
+	} else {
+		datapoints := consolidateBy(data, from, to, step, "avg")
+		for _, dp := range datapoints {
+			val := "null"
+			if dp[0] != nil {
+				val = fmt.Sprintf("%.2f", *dp[0])
+			}
+			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
+		}
+	}
+	// Output:
+	//[0.12, 1384613389]
+	//[null, 1384613509]
+	//[null, 1384613629]
+	//[null, 1384613749]
+	//[null, 1384613869]
+	//[null, 1384613989]
+	//[0.75, 1384614109]
+
+}
+
 func ExampleConsolidateByAvg() {
 	const js = `["[1720.0, 1370846820]", "[1637.0, 1370846880]", "[1669.0, 1370846930]", "[1651.0, 1370847000]", "[1425.0, 1370847010]"]`
 
@@ -17,17 +49,17 @@ func ExampleConsolidateByAvg() {
 		for _, dp := range datapoints {
 			val := "null"
 			if dp[0] != nil {
-				val = fmt.Sprintf("%.1f", *dp[0])
+				val = fmt.Sprintf("%.2f", *dp[0])
 			}
 			fmt.Printf("[%s, %.0f]\n", val, *dp[1])
 		}
 	}
 
 	// Output:
-	//[1720.0, 1370846820]
-	//[1653.0, 1370846880]
+	//[1720.00, 1370846820]
+	//[1653.00, 1370846880]
 	//[null, 1370846940]
-	//[1538.0, 1370847000]
+	//[1538.00, 1370847000]
 	//[null, 1370847060]
 }
 

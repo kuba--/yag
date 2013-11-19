@@ -84,7 +84,7 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 
 - Configuration file (e.g. config.json):
 
-**Note:** remove comments before using this config
+**Note 1:** remove comments before using this config
 
 	{
 		"DB":{                           // Database section
@@ -112,12 +112,31 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 		}
 	}
 
-**Note:** if you remove properties: "ConsolidationStep", "ConsolidationFunc" properties from config file, webserver will not consolidate datapoints
+**Note 2 (Webserver):** if you remove properties: "ConsolidationStep", "ConsolidationFunc" properties from config file, webserver will not consolidate datapoints
+
+**Note 3 (Webserver):** if you add "maxDataPoints" parameter > 0 then "ConsolidationStep" can be changed by webserver to return around "maxDataPoints". For instance, for following metrics received from StatsD, ConsolidationFunc: "avg" and maxDataPoints = 7
+
+
+	[[0,1384613389],[0,1384613399],[0,1384613409],[0.5,1384613419],[0.75,1384614209]]
+
+
+output datapoints are:
+
+
+	[0.12, 1384613389]
+	[null, 1384613509]
+	[null, 1384613629]
+	[null, 1384613749]
+	[null, 1384613869]
+	[null, 1384613989]
+	[0.75, 1384614109]
+
 
 
 ## TODO
-* Support for maxDataPoints
-* Add more functions
+* Logs library
+* Proxy sinks for listener
+* More functions
 
 
  

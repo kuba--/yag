@@ -135,11 +135,7 @@ func (h *RenderHandler) parseQuery(r *http.Request) error {
 		}
 		h.to = time.Now().Add(t).Unix()
 	}
-
-	if h.maxDataPoints, err = strconv.Atoi(r.FormValue("maxDataPoints")); err != nil {
-		h.maxDataPoints = -1
-	}
-
+	h.maxDataPoints, _ = strconv.Atoi(r.FormValue("maxDataPoints"))
 	h.jsonp = r.FormValue("jsonp")
 	h.target = fmt.Sprintf("_(%s)", strings.Join(r.URL.Query()["target"], ","))
 
