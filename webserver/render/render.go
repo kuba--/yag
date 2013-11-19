@@ -68,7 +68,7 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, new(metrics.Api)))
+		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
 
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -135,11 +135,7 @@ func (h *RenderHandler) parseQuery(r *http.Request) error {
 		}
 		h.to = time.Now().Add(t).Unix()
 	}
-
-	if h.maxDataPoints, err = strconv.Atoi(r.FormValue("maxDataPoints")); err != nil {
-		h.maxDataPoints = -1
-	}
-
+	h.maxDataPoints, _ = strconv.Atoi(r.FormValue("maxDataPoints"))
 	h.jsonp = r.FormValue("jsonp")
 	h.target = fmt.Sprintf("_(%s)", strings.Join(r.URL.Query()["target"], ","))
 
