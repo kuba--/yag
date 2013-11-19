@@ -112,15 +112,15 @@ image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yell
 		}
 	}
 
-**Note 2 (Webserver):** if you remove properties: "ConsolidationStep", "ConsolidationFunc" properties from config file, webserver will not consolidate datapoints
+**Note 2 (Webserver):** if you remove properties: "ConsolidationStep", "ConsolidationFunc" from config file, webserver will not consolidate datapoints.
 
-**Note 3 (Webserver):** if you add "maxDataPoints" parameter > 0 then "ConsolidationStep" can be changed by webserver to return around "maxDataPoints". For instance, for following metrics received from StatsD, ConsolidationFunc: "avg" and maxDataPoints = 7
-
-
-	[[0,1384613389],[0,1384613399],[0,1384613409],[0.5,1384613419],[0.75,1384614209]]
+**Note 3 (Webserver):** if you add "maxDataPoints" parameter > 0 then "ConsolidationStep" can be changed by webserver to return _around_ "maxDataPoints". For instance, for following data points received from StatsD daemon:
 
 
-output datapoints are:
+	[0,1384613389],[0,1384613399],[0,1384613409],[0.5,1384613419],[0.75,1384614209]
+
+
+ with ConsolidationFunc: "avg" and maxDataPoints=7, webserver will output following data points:
 
 
 	[0.12, 1384613389]
