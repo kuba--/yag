@@ -2,7 +2,8 @@ package metrics
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/golang/glog"
 	"strconv"
 	"strings"
 )
@@ -18,7 +19,7 @@ func NewApi(maxDataPoints int) *Api {
 }
 
 func (api *Api) Value(name string, from int64, to int64) interface{} {
-	log.Printf("Api.Value(%s, %d, %d)", name, from, to)
+	glog.Infof("Api.Value(%s, %d, %d)", name, from, to)
 
 	// check constant value first
 	if f, err := strconv.ParseFloat(name, 10); err == nil {
@@ -48,7 +49,7 @@ func (api *Api) Call(name string, argv interface{}) interface{} {
 				case "_":
 					return m0
 				default:
-					log.Println("[ ! ]\tFunction not supported: ", name)
+					glog.Warningln("[ ! ]\tFunction not supported: ", name)
 				}
 			}
 		}

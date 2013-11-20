@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
-	"log"
 	"net"
 	"strconv"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/pkg/metrics"
 )
@@ -14,12 +14,12 @@ import (
 func main() {
 	ln, err := net.Listen("tcp", config.Cfg.Listener.Addr)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatalln(err)
 	}
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Println(err)
+			glog.Warningln(err)
 			continue
 		}
 		go handle(conn)
@@ -27,9 +27,9 @@ func main() {
 }
 
 func handle(conn net.Conn) {
-	log.Printf("Connection: %s -> %s\n", conn.RemoteAddr(), conn.LocalAddr())
+	glog.Infof("Connection: %s -> %s\n", conn.RemoteAddr(), conn.LocalAddr())
 	defer func() {
-		log.Printf("Closing connection: %s\n", conn.RemoteAddr())
+		glog.Infof("Closing connection: %s\n", conn.RemoteAddr())
 		conn.Close()
 	}()
 
@@ -37,7 +37,7 @@ func handle(conn net.Conn) {
 	for scanner.Scan() {
 		if m := strings.Split(scanner.Text(), " "); len(m) > 2 {
 			if ts, err := strconv.ParseInt(m[2], 10, 0); err != nil {
-				log.Println(err)
+				glog.Warningln(err)
 				continue
 			} else {
 				metrics.Add(m[0], m[1], ts)
@@ -46,6 +46,7 @@ func handle(conn net.Conn) {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 	}
+	glog.Flush()
 }
