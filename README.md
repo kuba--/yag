@@ -31,15 +31,15 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 
 
-## Installing
+# Installing
 
-# Dependencies
+## Dependencies
 	
 - YAG was implemented in "Go", so install golang first [http://golang.org/doc/install].
 
 - YAG uses redis database (check redis.conf for configuration details) to store datapoints, so you need to install redis database [http://redis.io/download] on your DB server. Redis version >= `2.6.0` required in order to load lua scripts
 
-# Compiling
+## Compiling
 	
 - Set up $GOPATH (e.g.: $GOPATH=$HOME/workspace).
 	
@@ -76,6 +76,8 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 # Usage
 
+## Run
+
 -  You can run listener, webserver and ttl with following flags:
 		
 		-alsologtostderr=false: log to standard error as well as files
@@ -87,9 +89,9 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 		-v=0: log level for V logs
 		-vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 
-E.g:
+- Example
 
-		$ ./linux_amd64/ttl -f=./linux_amd64/config.json -log_dir="./linux_amd64/logs" -stderrthreshold=ERROR
+		$ ./ttl -f=./config.json -log_dir="./logs" -stderrthreshold=ERROR
 
 
 
@@ -148,13 +150,13 @@ E.g:
 
 
 
-## TODO
+# TODO
 * Proxy sinks for listener
 * Add more functions
 
 
  
-## Copyright and licensing
+# Copyright and licensing
 
 Copyright 2013 *Kuba Podgorski*
 
