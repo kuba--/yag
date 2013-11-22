@@ -89,9 +89,9 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 		-v=0: log level for V logs
 		-vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 
-- Example
+- Example:
 
-		$ ./ttl -f=./config.json -log_dir="./logs" -stderrthreshold=ERROR
+		$ ./ttl -f=./config.json -log_dir=./logs -stderrthreshold=ERROR
 
 
 
