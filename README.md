@@ -43,11 +43,13 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 	
 - Set up $GOPATH (e.g.: $GOPATH=$HOME/workspace).
 	
-- Now you can compile YAG's code with redis' driver - redix. 
+- Now you can compile YAG's code with redis' driver (redix) and glog library 
 
 		cd $GOPATH
 
 		go get github.com/fzzy/radix/redis
+
+		go get github.com/golang/glog
 
 		go get github.com/kuba--/yag/listener
 	
@@ -72,15 +74,19 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 - Executable files are in $GOPATH/bin directory.
 
-# Running
+# Usage
 
--  Start listener, webserver, ttl
+-  You can run listener, webserver and ttl with following flags:
+		
+		-alsologtostderr=false: log to standard error as well as files
+		-f="config.json": path to the config file
+		-log_backtrace_at=:0: when logging hits line file:N, emit a stack trace
+		-log_dir="": If non-empty, write log files in this directory
+		-logtostderr=false: log to standard error instead of files
+		-stderrthreshold=0: logs at or above this threshold go to stderr
+		-v=0: log level for V logs
+		-vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 
-		$GOPATH/bin/listener [-f Specify a path to the config file]
-	
-		$GOPATH/bin/webserver [-f Specify a path to the config file]
-	
-		$GOPATH/bin/ttl [-f Specify a path to the config file]
 
 
 
@@ -139,9 +145,8 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 
 ## TODO
-* Logs library
 * Proxy sinks for listener
-* More functions
+* Add more functions
 
 
  
