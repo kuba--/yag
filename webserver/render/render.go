@@ -2,12 +2,12 @@ package render
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/kuba--/yag/pkg/api"
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/pkg/metrics"
@@ -15,7 +15,7 @@ import (
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	t := time.Now()
-	log.Println(r.RequestURI)
+	glog.Infoln(r.RequestURI)
 
 	// ResponseWriter wrapper
 	w.Header().Set("Server", "YAG")
@@ -26,7 +26,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	http.TimeoutHandler(&RenderHandler{}, time.Duration(config.Cfg.Webserver.Timeout)*time.Second,
 		http.StatusText(http.StatusRequestTimeout)).ServeHTTP(rw, r)
 
-	log.Printf("[%v] in %v\n", rw.Code, time.Now().Sub(t))
+	glog.Infof("[%v] in %v\n", rw.Code, time.Now().Sub(t))
 }
 
 // RenderResponseWriter retrieves StatusCode from ResponseWriter
@@ -63,12 +63,15 @@ type RenderHandler struct {
 func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
+		glog.Infof("%v\n", r.URL)
 		err := h.parseQuery(r)
 		if err != nil {
+			glog.Warningln(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
+		glog.Flush()
 
 	default:
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
@@ -108,7 +111,9 @@ func (h *RenderHandler) jsonResponse(w http.ResponseWriter, data interface{}) {
 			fmt.Fprintf(w, "]}")
 		}
 		fmt.Fprintf(w, "])")
+		glog.Infof("%v\n", data)
 	} else {
+		glog.Errorf("%v\n", data)
 		http.Error(w, fmt.Sprintf("%v", data), http.StatusBadRequest)
 	}
 }

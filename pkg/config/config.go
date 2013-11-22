@@ -3,8 +3,8 @@ package config
 import (
 	"encoding/json"
 	"flag"
+	"github.com/golang/glog"
 	"io/ioutil"
-	"log"
 	"path/filepath"
 )
 
@@ -39,37 +39,36 @@ var Cfg struct {
 }
 
 func init() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	var f string
 	flag.StringVar(&f, "f", "config.json", "Specify a path to the config file")
 	flag.Parse()
 
 	if cfg, err := ioutil.ReadFile(f); err != nil {
-		log.Println(err)
+		glog.Fatalln(err)
 	} else {
 		if err := json.Unmarshal(cfg, &Cfg); err != nil {
-			log.Fatal(err)
+			glog.Fatal(err)
 		}
-		log.Printf("%v", string(cfg))
+		glog.Infof("%v", string(cfg))
 	}
 
 	dir := filepath.Dir(f) + "/"
 	if script, err := ioutil.ReadFile(dir + Cfg.Metrics.AddScript); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 		Cfg.Metrics.AddScript = ""
 	} else {
 		Cfg.Metrics.AddScript = string(script)
 	}
 
 	if script, err := ioutil.ReadFile(dir + Cfg.Metrics.GetScript); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 		Cfg.Metrics.GetScript = ""
 	} else {
 		Cfg.Metrics.GetScript = string(script)
 	}
 
 	if script, err := ioutil.ReadFile(dir + Cfg.Metrics.TtlScript); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 		Cfg.Metrics.TtlScript = ""
 	} else {
 		Cfg.Metrics.TtlScript = string(script)

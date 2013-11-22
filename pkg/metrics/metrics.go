@@ -2,10 +2,10 @@ package metrics
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/pkg/db"
 )
@@ -18,31 +18,31 @@ var (
 
 func init() {
 	if client, err := db.Client(); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 	} else {
 		defer db.Release(client)
 		{
 			if len(config.Cfg.Metrics.AddScript) > 0 {
 				if addSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.AddScript).Str(); err != nil {
-					log.Println(err)
+					glog.Errorln(err)
 				} else {
-					log.Println("ADD SHA", addSha)
+					glog.Infoln("ADD SHA", addSha)
 				}
 			}
 
 			if len(config.Cfg.Metrics.GetScript) > 0 {
 				if getSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.GetScript).Str(); err != nil {
-					log.Println(err)
+					glog.Errorln(err)
 				} else {
-					log.Println("GET SHA", getSha)
+					glog.Infoln("GET SHA", getSha)
 				}
 			}
 
 			if len(config.Cfg.Metrics.TtlScript) > 0 {
 				if ttlSha, err = client.Cmd("SCRIPT", "LOAD", config.Cfg.Metrics.TtlScript).Str(); err != nil {
-					log.Println(err)
+					glog.Errorln(err)
 				} else {
-					log.Println("TTL SHA", ttlSha)
+					glog.Infoln("TTL SHA", ttlSha)
 				}
 			}
 		}
@@ -76,19 +76,19 @@ func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 	var data []map[string]interface{}
 
 	if client, err := db.Client(); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 	} else {
 		defer db.Release(client)
 
 		if js, err = client.Cmd("EVALSHA", getSha, 1, key, from, to).Bytes(); err != nil {
-			log.Println(err)
+			glog.Warningln(err)
 			if js, err = client.Cmd("EVAL", config.Cfg.Metrics.GetScript, 1, key, from, to).Bytes(); err != nil {
-				log.Println(err)
+				glog.Errorln(err)
 			}
 		}
 
 		if err = json.Unmarshal(js, &data); err != nil {
-			log.Println(err)
+			glog.Errorln(err)
 		}
 	}
 
@@ -108,7 +108,7 @@ func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 			for _, dp := range datapoints {
 				var pt Pt
 				if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
-					log.Println(err)
+					glog.Warningln(err)
 					continue
 				}
 				m.Datapoints = append(m.Datapoints, pt)
@@ -124,38 +124,38 @@ func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 
 func Add(key string, value string, timestamp int64) {
 	if client, err := db.Client(); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 	} else {
 		defer db.Release(client)
 
 		if r := client.Cmd("EVALSHA", addSha, 1, key, value, timestamp); r.Err != nil {
-			log.Println(r.Err)
+			glog.Warningln(r.Err)
 
 			if r = client.Cmd("EVAL", config.Cfg.Metrics.AddScript, 1, key, value, timestamp); r.Err != nil {
-				log.Println(r.Err)
+				glog.Errorln(r.Err)
 			}
 		} else {
-			log.Printf("[OK: %v]\t(%s %s)|%d", r, key, value, timestamp)
+			glog.Infof("[OK: %v]\t(%s %s)|%d", r, key, value, timestamp)
 		}
 	}
 }
 
 func Ttl(from int64, to int64) {
 	if client, err := db.Client(); err != nil {
-		log.Println(err)
+		glog.Errorln(err)
 	} else {
 		t0 := time.Now()
 		defer db.Release(client)
 
 		if r := client.Cmd("EVALSHA", ttlSha, 1, "*", from, to); r.Err != nil {
-			log.Println(r.Err)
+			glog.Warningln(r.Err)
 
 			if r = client.Cmd("EVAL", config.Cfg.Metrics.TtlScript, 1, "*", from, to); r.Err != nil {
-				log.Println(r.Err)
+				glog.Errorln(r.Err)
 			}
 		} else {
 			t1 := time.Now()
-			log.Printf("ZREMRANGEBYSCORE(%d, %d): %v in %v", from, to, r, t1.Sub(t0))
+			glog.Infof("ZREMRANGEBYSCORE(%d, %d): %v in %v", from, to, r, t1.Sub(t0))
 		}
 	}
 }
@@ -184,7 +184,7 @@ func consolidateBy(data []interface{}, from, to int64, step int, fn string) (dat
 		for ; i < len(data); i++ {
 			var pt Pt
 			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
-				log.Println(err)
+				glog.Errorln(err)
 				break
 			}
 			if pt[1] != nil && int64(*pt[1]) >= from && int64(*pt[1]) < from+int64(step) {

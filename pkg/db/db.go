@@ -1,10 +1,10 @@
 package db
 
 import (
-	"log"
 	"time"
 
 	"github.com/fzzy/radix/redis"
+	"github.com/golang/glog"
 	"github.com/kuba--/yag/pkg/config"
 )
 
@@ -27,16 +27,16 @@ func Client() (*redis.Client, error) {
 		case c := <-clients:
 			r := c.Cmd("PING")
 			if r.Err != nil {
-				log.Println("PING error: ", r.Err)
+				glog.Warningln("PING error: ", r.Err)
 				if err := c.Close(); err != nil {
-					log.Println("Close error: ", err)
+					glog.Warningln("Close error: ", err)
 				}
 				continue
 			}
 			return c, nil
 
 		case <-time.After(time.Duration(config.Cfg.DB.Timeout) * time.Second):
-			log.Println("DB Client timed out")
+			glog.Warningln("DB Client timed out")
 		}
 	}
 	return newClient()
@@ -47,13 +47,13 @@ func Client() (*redis.Client, error) {
 func Release(client *redis.Client) {
 	if client != nil {
 		if len(clients) < config.Cfg.DB.MaxClients {
-			log.Println("Releasing Db Client")
+			glog.Infoln("Releasing Db Client")
 			clients <- client
-			log.Println("Number of idle Db Clients: ", len(clients))
+			glog.Infoln("Number of idle Db Clients: ", len(clients))
 		} else {
-			log.Println("Closing Db Client")
+			glog.Infoln("Closing Db Client")
 			if err := client.Close(); err != nil {
-				log.Println("Close error: ", err)
+				glog.Warningln("Close error: ", err)
 			}
 		}
 	}
