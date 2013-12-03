@@ -111,7 +111,7 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 			"TtlScript":"ttl.lua",       // relative path to ttl script
 			"TTL":86600,                 // time to live per metric (in seconds)
 			"ConsolidationStep":60,      // consolidate datapoints per step (in seconds).
-	    		"ConsolidationFunc":"avg"    // function used to consolidate datapoints (valid function names: sum, avg, min, max)
+			"ConsolidationFunc":"avg"    // function used to consolidate datapoints (valid function names: sum, avg, min, max)
 		},
 		"Listener":{                    // Listener server section 
 			"Addr":":2003"               // local address and port
