@@ -38,12 +38,20 @@ var Cfg struct {
 	}
 }
 
+var Pprof struct {
+	Cpu string
+	Mem string
+}
+
 func init() {
-	var f string
-	flag.StringVar(&f, "f", "config.json", "Specify a path to the config file")
+	var f = flag.String("f", "config.json", "read configuration from file")
+
+	flag.StringVar(&Pprof.Cpu, "cpuprofile", "", "write cpu profile to file")
+	flag.StringVar(&Pprof.Mem, "memprofile", "", "write memory profile to this file")
+
 	flag.Parse()
 
-	if cfg, err := ioutil.ReadFile(f); err != nil {
+	if cfg, err := ioutil.ReadFile(*f); err != nil {
 		glog.Fatalln(err)
 	} else {
 		if err := json.Unmarshal(cfg, &Cfg); err != nil {
@@ -52,7 +60,7 @@ func init() {
 		glog.Infof("%v", string(cfg))
 	}
 
-	dir := filepath.Dir(f) + "/"
+	dir := filepath.Dir(*f) + "/"
 	if script, err := ioutil.ReadFile(dir + Cfg.Metrics.AddScript); err != nil {
 		glog.Errorln(err)
 		Cfg.Metrics.AddScript = ""
