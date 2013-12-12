@@ -2,7 +2,6 @@ package main
 
 import (
 	"time"
-
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/pkg/metrics"
 )

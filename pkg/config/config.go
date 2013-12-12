@@ -3,9 +3,10 @@ package config
 import (
 	"encoding/json"
 	"flag"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/golang/glog"
 )
 
 var Cfg struct {
@@ -52,7 +53,8 @@ func init() {
 	flag.Parse()
 
 	if cfg, err := ioutil.ReadFile(*f); err != nil {
-		glog.Fatalln(err)
+		glog.Errorln(err)
+		return
 	} else {
 		if err := json.Unmarshal(cfg, &Cfg); err != nil {
 			glog.Fatal(err)

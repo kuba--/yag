@@ -11,10 +11,10 @@ mv ${PACKAGE} "${GOOS}_${GOARCH}/" && cd "${GOOS}_${GOARCH}" && tar zxvf ${PACKA
 for cmd in "listener" "webserver" "ttl"; do
 	EXEC="${HOME}/${GOOS}_${GOARCH}/${cmd} -- -f=${HOME}/${GOOS}_${GOARCH}/config.json -stderrthreshold=WARNING -log_dir=${HOME}/${GOOS}_${GOARCH}/logs"
 
-	start-stop-daemon -v --stop --exec $EXEC 
+	start-stop-daemon --stop --pidfile "${HOME}/${cmd}.pid"
 	if [ $? -ne 0 ]
 		then
 		pkill "${cmd}"
 	fi
-	start-stop-daemon -v --start --background --exec $EXEC
+	start-stop-daemon --start --background --make-pid --pidfile "${HOME}/${cmd}.pid" --exec $EXEC
 done
