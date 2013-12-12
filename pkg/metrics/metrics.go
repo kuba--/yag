@@ -51,16 +51,17 @@ func init() {
 
 type Pt [2]*float64
 
+func makePt(dp interface{}) (pt Pt) {
+	if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
+		glog.Warningln(err)
+	}
+	return
+}
+
 type Metrics struct {
 	Key        string
 	Target     string
 	Datapoints []Pt
-}
-
-func newMetrics(key, target string, datapoints []Pt) (m *Metrics) {
-	m = new(Metrics)
-	m.Key, m.Target, m.Datapoints = key, target, datapoints
-	return
 }
 
 /*
@@ -106,12 +107,9 @@ func Get(key string, from int64, to int64, maxDataPoints int) (ms []*Metrics) {
 
 		if config.Cfg.Metrics.ConsolidationStep < 1 || len(config.Cfg.Metrics.ConsolidationFunc) < 1 {
 			for _, dp := range datapoints {
-				var pt Pt
-				if err := json.Unmarshal([]byte(dp.(string)), &pt); err != nil {
-					glog.Warningln(err)
-					continue
+				if pt := makePt(dp); pt[1] != nil {
+					m.Datapoints = append(m.Datapoints, pt)
 				}
-				m.Datapoints = append(m.Datapoints, pt)
 			}
 		} else {
 			step := consolidationStep(from, to, config.Cfg.Metrics.ConsolidationStep, maxDataPoints)
@@ -182,11 +180,7 @@ func consolidateBy(data []interface{}, from, to int64, step int, fn string) (dat
 		*sum, *ts = 0.0, float64(from)
 
 		for ; i < len(data); i++ {
-			var pt Pt
-			if err := json.Unmarshal([]byte(data[i].(string)), &pt); err != nil {
-				glog.Errorln(err)
-				break
-			}
+			pt := makePt(data[i])
 			if pt[1] != nil && int64(*pt[1]) >= from && int64(*pt[1]) < from+int64(step) {
 				*sum = *sum + *pt[0]
 

@@ -13,3 +13,9 @@
 *.exe
 
 *.log
+
+*.swo
+
+*.mem
+
+*.cpu

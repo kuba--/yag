@@ -3,19 +3,13 @@ package metrics
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	"strconv"
 	"strings"
+	"github.com/golang/glog"
 )
 
 type Api struct {
-	maxDataPoints int
-}
-
-func NewApi(maxDataPoints int) *Api {
-	api := new(Api)
-	api.maxDataPoints = maxDataPoints
-	return api
+	MaxDataPoints int
 }
 
 func (api *Api) Value(name string, from int64, to int64) interface{} {
@@ -25,7 +19,7 @@ func (api *Api) Value(name string, from int64, to int64) interface{} {
 	if f, err := strconv.ParseFloat(name, 10); err == nil {
 		return f
 	}
-	return Get(name, from, to, api.maxDataPoints)
+	return Get(name, from, to, api.MaxDataPoints)
 }
 
 func (api *Api) Call(name string, argv interface{}) interface{} {
@@ -131,7 +125,7 @@ func (api *Api) sumSeries(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-			sm = append(sm, newMetrics(key, fmt.Sprintf("sum(%s)", key), dp0))
+			sm = append(sm, &Metrics{key, fmt.Sprintf("sum(%s)", key), dp0})
 		}
 	}
 	return sm
@@ -181,7 +175,7 @@ func (api *Api) divSeries(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-			sm = append(sm, newMetrics(key, fmt.Sprintf("div(%s)", key), dp0))
+			sm = append(sm, &Metrics{key, fmt.Sprintf("div(%s)", key), dp0})
 		}
 	}
 	return sm
@@ -258,7 +252,7 @@ func (api *Api) diffSeries(m []*Metrics) []*Metrics {
 
 				dp0 = datapoints
 			}
-			sm = append(sm, newMetrics(key, fmt.Sprintf("diff(%s)", key), dp0))
+			sm = append(sm, &Metrics{key, fmt.Sprintf("diff(%s)", key), dp0})
 		}
 	}
 	return sm
