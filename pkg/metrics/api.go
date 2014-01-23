@@ -2,9 +2,9 @@ package metrics
 
 import (
 	"fmt"
-
 	"strconv"
 	"strings"
+
 	"github.com/golang/glog"
 )
 
