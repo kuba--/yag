@@ -43,13 +43,9 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 	
 - Set up $GOPATH (e.g.: $GOPATH=$HOME/workspace).
 	
-- Now you can compile YAG's code with redis' driver (redix) and glog library 
+- Now you can compile YAG's code. Redis' driver (redix) and glog library will be installed automatically.
 
 		cd $GOPATH
-
-		go get github.com/fzzy/radix/redis
-
-		go get github.com/golang/glog
 
 		go get github.com/kuba--/yag/listener
 		go get github.com/kuba--/yag/webserver
@@ -81,16 +77,27 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 		-f="config.json": path to the config file
 
 		-alsologtostderr=false: log to standard error as well as files
-		-log_backtrace_at=:0: when logging hits line file:N, emit a stack trace
 		-log_dir="": If non-empty, write log files in this directory
 		-logtostderr=false: log to standard error instead of files
 		-stderrthreshold=0: logs at or above this threshold go to stderr
+		
+		
 
 - Example:
 
 		$ ./listener -f=./config.json -log_dir=./logs -stderrthreshold=INFO
 
 
+
+## Profiling
+
+- You can also profiling listener and webserver adding following flags:
+
+		-cpuprofile="": write cpu profile to file
+		-memprofile="": write memory profile to this file
+		
+More about profiling go programs you can find here: 
+	http://blog.golang.org/profiling-go-programs
 
 
 ## Configuring
