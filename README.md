@@ -52,9 +52,7 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 		go get github.com/golang/glog
 
 		go get github.com/kuba--/yag/listener
-	
 		go get github.com/kuba--/yag/webserver
-	
 		go get github.com/kuba--/yag/ttl
 		
 
@@ -80,18 +78,17 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 -  You can run listener, webserver and ttl with following flags:
 		
-		-alsologtostderr=false: log to standard error as well as files
 		-f="config.json": path to the config file
+
+		-alsologtostderr=false: log to standard error as well as files
 		-log_backtrace_at=:0: when logging hits line file:N, emit a stack trace
 		-log_dir="": If non-empty, write log files in this directory
 		-logtostderr=false: log to standard error instead of files
 		-stderrthreshold=0: logs at or above this threshold go to stderr
-		-v=0: log level for V logs
-		-vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 
 - Example:
 
-		$ ./ttl -f=./config.json -log_dir=./logs -stderrthreshold=ERROR
+		$ ./listener -f=./config.json -log_dir=./logs -stderrthreshold=INFO
 
 
 
@@ -103,27 +100,27 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 **Note 1:** remove comments before using this config
 
 	{
-		"DB":{                           // Database section
+		"DB":{                          // Database section
 			"Addr":"localhost:6379",     // address and port of Redis DB
 			"Timeout":30,                // timeout per connection (in seconds)
 			"MaxClients":30              // maximum number of clients in DB connection pool
 		},
-		"Metrics":{                      // Metrics section
+		"Metrics":{                     // Metrics section
 			"GetScript":"get.lua",       // relative path to get script
 			"AddScript":"add.lua",       // relative path to add script					
 			"TtlScript":"ttl.lua",       // relative path to ttl script
 			"TTL":86600,                 // time to live per metric (in seconds)
 			"ConsolidationStep":60,      // consolidate datapoints per step (in seconds).
-            "ConsolidationFunc":"avg"    // function used to consolidate datapoints (valid function names: sum, avg, min, max)
+			"ConsolidationFunc":"avg"    // function used to consolidate datapoints (valid function names: sum, avg, min, max)
 		},
-		"Listener":{                     // Listener server section 
+		"Listener":{                    // Listener server section 
 			"Addr":":2003"               // local address and port
 		},
-		"Webserver":{                    // Webserver section
+		"Webserver":{                   // Webserver section
 			"Addr":":8080",              // local address and port
 			"Timeout":30                 // timeout per connection (in seconds)
 		},
-		"TTL":{                          // TTL daemon section
+		"TTL":{                         // TTL daemon section
 			"Tick":12                    // timers tick (in seconds)
 		}
 	}

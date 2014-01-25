@@ -70,7 +70,7 @@ func (h *RenderHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, metrics.NewApi(h.maxDataPoints)))
+		h.jsonResponse(w, api.Eval(h.target, h.from, h.to, &metrics.Api{h.maxDataPoints}))
 		glog.Flush()
 
 	default:

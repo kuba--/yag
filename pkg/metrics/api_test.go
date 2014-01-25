@@ -19,7 +19,7 @@ func ExampleSumSeries() {
 	if err := json.Unmarshal([]byte(data), &m); err != nil {
 		fmt.Println(err)
 	} else {
-		m := new(Api).sumSeries(m)[0]
+		m := (&Api{}).sumSeries(m)[0]
 		for _, dp := range m.Datapoints {
 			val := "null"
 			if dp[0] != nil {
@@ -38,11 +38,11 @@ func ExampleSumSeries() {
 
 func TestEqual(t *testing.T) {
 
-	const d1 = `["[1720.0, 1370846820]", "[1637.0, 1370846830]", "[1669.0, 1370846910]", "[1651.0, 1370847000]", "[1425.0, 1370847060]"]`
-	const d2 = `["[1.0, 1370846820]","[1.0, 1370846910]", "[1.0, 1370847000]"]`
-	const d3 = `["[-1.0, 1370846820]","[-1.0, 1370846910]", "[-1.0, 1370847000]"]`
+	const d1 = `["[1720.0,1370846820]", "[1637.0,1370846830]", "[1669.0,1370846910]", "[1651.0,1370847000]", "[1425.0,1370847060]"]`
+	const d2 = `["[1.0,1370846820]","[1.0,1370846910]", "[1.0,1370847000]"]`
+	const d3 = `["[-1.0,1370846820]","[-1.0,1370846910]", "[-1.0,1370847000]"]`
 
-	const d123 = `["[1720.00, 1370846820]", "[1637.00, 1370846830]", "[1669.00, 1370846910]", "[1651.00, 1370847000]", "[1425.00, 1370847060]"]`
+	const d123 = `["[1720.00,1370846820]", "[1637.00,1370846830]", "[1669.00,1370846910]", "[1651.00,1370847000]", "[1425.00,1370847060]"]`
 
 	var isEq = func(m1, m2 *Metrics) bool {
 		if m2 == nil {
@@ -71,26 +71,26 @@ func TestEqual(t *testing.T) {
 	if err := json.Unmarshal([]byte(d1), &data1); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d1", "d1", consolidateBy(data1, 1370846820, 1370847060, 60, "avg")))
+		m1 = append(m1, &Metrics{"d1", "d1", consolidateBy(data1, 1370846820, 1370847060, 60, "avg")})
 	}
 
 	if err := json.Unmarshal([]byte(d2), &data2); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d2", "d2", consolidateBy(data2, 1370846820, 1370847060, 60, "avg")))
+		m1 = append(m1, &Metrics{"d2", "d2", consolidateBy(data2, 1370846820, 1370847060, 60, "avg")})
 	}
 
 	if err := json.Unmarshal([]byte(d3), &data3); err != nil {
 		fmt.Println(err)
 	} else {
-		m1 = append(m1, newMetrics("d3", "d3", consolidateBy(data3, 1370846820, 1370847060, 60, "avg")))
+		m1 = append(m1, &Metrics{"d3", "d3", consolidateBy(data3, 1370846820, 1370847060, 60, "avg")})
 	}
 
 	var m2 []*Metrics
 	if err := json.Unmarshal([]byte(d123), &data123); err != nil {
 		t.Error(err)
 	} else {
-		m2 = append(m2, newMetrics("d123", "d123", consolidateBy(data123, 1370846820, 1370847060, 60, "avg")))
+		m2 = append(m2, &Metrics{"d123", "d123", consolidateBy(data123, 1370846820, 1370847060, 60, "avg")})
 	}
 
 	m1 = new(Api).sumSeries(m1)
