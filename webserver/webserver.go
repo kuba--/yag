@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/golang/glog"
+	"github.com/kuba--/glog"
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/webserver/render"
 )

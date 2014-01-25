@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/fzzy/radix/redis"
-	"github.com/golang/glog"
+	"github.com/kuba--/glog"
 	"github.com/kuba--/yag/pkg/config"
 )
 

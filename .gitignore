@@ -13,3 +13,5 @@
 *.exe
 
 *.log
+
+*.test

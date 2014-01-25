@@ -2,8 +2,9 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"strconv"
+
+	"github.com/kuba--/glog"
 )
 
 type IntApi struct{}
@@ -12,7 +13,7 @@ func (api *IntApi) Value(name string, from int64, to int64) interface{} {
 	if i, err := strconv.Atoi(name); err == nil {
 		return i
 	} else {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	return nil
 }

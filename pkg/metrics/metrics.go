@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/kuba--/glog"
 	"github.com/kuba--/yag/pkg/config"
 	"github.com/kuba--/yag/pkg/db"
 )

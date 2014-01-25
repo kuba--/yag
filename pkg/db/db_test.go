@@ -1,5 +1,5 @@
 /**
- * go test -f ../../config.json 
+ * go test -f ../../config.json
  */
 
 package db

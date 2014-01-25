@@ -2,10 +2,10 @@ package metrics
 
 import (
 	"fmt"
-
-	"github.com/golang/glog"
 	"strconv"
 	"strings"
+
+	"github.com/kuba--/glog"
 )
 
 type Api struct {

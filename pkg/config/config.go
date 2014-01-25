@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
-	"github.com/golang/glog"
+	"github.com/kuba--/glog"
 )
 
 var Cfg struct {
