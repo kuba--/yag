@@ -154,11 +154,6 @@ More about profiling go programs you can find here:
 
 
 
-# TODO
-* Proxy sinks for listener
-* Add more functions
-
-
  
 # Copyright and licensing
 
