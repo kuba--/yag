@@ -3,7 +3,7 @@ YAG (Yet Another Graphite)
 
 
 <img alt="yak" src="http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yellow-yak.png" />
-###### image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yellow-yak.png
+<sup>image source: http://www.bluebison.net/sketchbook/2010/0110/monkey-riding-a-yellow-yak.png</sup>
 
 
 "Graphite is actually a bit of a niche application. Specifically, it is designed to handle numeric time-series data. For example, Graphite would be good at graphing stock prices because they are numbers that change over time."
@@ -27,7 +27,7 @@ For metrics dashboard, I recommand *giraffe*. Here is my fork:
 
 	https://github.com/kuba--/giraffe
 <img alt="giraffe" src="https://raw.github.com/kuba--/giraffe/master/img/snapshot.png" />
-###### snapshot taken from giraffe demo webpage
+<sup>snapshot taken from giraffe demo webpage</sup>
 
 
 
